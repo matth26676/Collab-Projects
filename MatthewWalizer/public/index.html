@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Hello!</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+    const socket = io();
+    socket.on('recievedata', function (message) {
+        console.log(message);
+
+        if (message.buttonValue != null) {
+            switch (message.buttonValue) {
+                case 0:
+                    console.log(message.buttonValue);
+                    document.getElementById('gamebutton' + message.buttonNumber).style.backgroundColor = 'blue'
+                    break;
+
+                case 1:
+                    document.getElementById('gamebutton' + message.buttonNumber).style.backgroundColor = 'red'
+                    break;
+            }
+        }
+
+    })
+</script>
+
+<body>
+    <div id="mainpage">
+        <div id="gamepage">
+            <script>
+                for (let i = 0; i <= 15; i++) {
+                    document.write(`<button class="gamebutton" id="${'gamebutton'+i}" onclick="socket.emit('senddata', {buttonNumber})"></button>`)
+                }
+            </script>
+        </div>
+        Integrating Socket.io with Node.js and Express
+    </div>
+</body>
+
+</html>
