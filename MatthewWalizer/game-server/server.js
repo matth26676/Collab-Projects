@@ -23,7 +23,10 @@ io.on('connection', (socket) => {
   socket.on('senddata', function (message) {
     console.log('Controls recieved');
     console.log(message);
-    
+    buttonList[message.buttonNumber] = message.buttonValue 
+    for (buttonNumber in buttonList) {
+      socket.emit("recievedata", {buttonNumber: buttonNumber, buttonValue: buttonList[buttonNumber]})
+    }
     
   })
   socket.on('disconnect', function () {

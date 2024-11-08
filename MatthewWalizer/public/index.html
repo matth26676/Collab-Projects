@@ -6,39 +6,64 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <script src="/socket.io/socket.io.js"></script>
-<script>
 
-    const socket = io();
-    socket.on('recievedata', function (message) {
-        console.log(message);
-
-        if (message.buttonValue != null) {
-            switch (message.buttonValue) {
-                case 0:
-                    console.log(message.buttonValue);
-                    document.getElementById('gamebutton' + message.buttonNumber).style.backgroundColor = 'blue'
-                    break;
-
-                case 1:
-                    document.getElementById('gamebutton' + message.buttonNumber).style.backgroundColor = 'red'
-                    break;
-            }
-        }
-
-    })
-</script>
 
 <body>
     <div id="mainpage">
         <div id="gamepage">
             <script>
-                for (let i = 0; i <= 15; i++) {
-                    document.write(`<button class="gamebutton" id="${'gamebutton'+i}" onclick="socket.emit('senddata', {buttonNumber})"></button>`)
-                }
+
             </script>
         </div>
         Integrating Socket.io with Node.js and Express
     </div>
 </body>
+<script>
+
+    function buttonPress(currentButtonValue) {
+        switch (currentButtonValue) {
+            case 0:
+                return 1
+                break;
+
+            case 1:
+                return 0
+                break;
+        }
+
+    }
+
+    const socket = io();
+    socket.on('recievedata', function (message) {
+        if (message.buttonValue != null) {
+            var gameButtonNumber = 'gamebutton' + message.buttonNumber
+            var gameButton = document.getElementById(gameButtonNumber);
+            switch (message.buttonValue) {
+                case 0:
+                    gameButton.style.backgroundColor = 'blue';
+                    gameButton.buttonValue = message.buttonValue;
+                    break;
+
+                case 1:
+                    gameButton.style.backgroundColor = 'red';
+                    gameButton.buttonValue = message.buttonValue;
+                    break;
+            }
+        }
+    })
+
+    for (let i = 0; i <= 15; i++) {
+
+        let game = document.getElementById('gamepage')
+        let newButton = document.createElement('button');
+        newButton.classList.add('gamebutton');
+        newButton.id = "gamebutton" + i;
+        console.log(newButton);
+        
+        newButton.addEventListener('click', () => { socket.emit('senddata', { buttonNumber: i, buttonValue: 0 }) })
+        document.getElementById('gamepage').appendChild(newButton)
+
+    }
+</script>
 
 </html>
