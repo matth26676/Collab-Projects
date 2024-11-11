@@ -4,10 +4,14 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const port = process.env.PORT || 8080;
 var buttonList = [
-  0, 0, 0, 0, 
-  0, 0, 0, 0,
-  1, 1, 1, 1,
-  1, 1, 1, 1
+  0, 0, 0, 0, 1, 1, 1, 1, 
+  0, 0, 0, 0, 1, 1, 1, 1,
+  0, 0, 0, 0, 1, 1, 1, 1, 
+  0, 0, 0, 0, 1, 1, 1, 1,
+  0, 0, 0, 0, 1, 1, 1, 1, 
+  0, 0, 0, 0, 1, 1, 1, 1,
+  0, 0, 0, 0, 1, 1, 1, 1, 
+  0, 0, 0, 0, 1, 1, 1, 1
 ]
 
 app.use(express.static('public'))

@@ -11,14 +11,14 @@
 <body>
     <div id="mainpage">
         <div id="gamepage">
-            <script>
-
-            </script>
+            <div id="buttonpage"></div>
         </div>
         Integrating Socket.io with Node.js and Express
     </div>
 </body>
 <script>
+
+    var buttonList = []
 
     function buttonPress(currentButtonValue) {
         switch (currentButtonValue) {
@@ -38,30 +38,28 @@
         if (message.buttonValue != null) {
             var gameButtonNumber = 'gamebutton' + message.buttonNumber
             var gameButton = document.getElementById(gameButtonNumber);
+            buttonList[message.buttonNumber] = message.buttonValue
             switch (message.buttonValue) {
                 case 0:
                     gameButton.style.backgroundColor = 'blue';
-                    gameButton.buttonValue = message.buttonValue;
                     break;
 
                 case 1:
                     gameButton.style.backgroundColor = 'red';
-                    gameButton.buttonValue = message.buttonValue;
                     break;
             }
         }
     })
 
-    for (let i = 0; i <= 15; i++) {
+    for (let i = 0; i <= 63; i++) {
 
-        let game = document.getElementById('gamepage')
+        let game = document.getElementById('buttonpage')
         let newButton = document.createElement('button');
         newButton.classList.add('gamebutton');
         newButton.id = "gamebutton" + i;
-        console.log(newButton);
         
-        newButton.addEventListener('click', () => { socket.emit('senddata', { buttonNumber: i, buttonValue: 0 }) })
-        document.getElementById('gamepage').appendChild(newButton)
+        newButton.addEventListener('click', () => { socket.emit('senddata', { buttonNumber: i, buttonValue: buttonPress(buttonList[i]) }) })
+        document.getElementById('buttonpage').appendChild(newButton)
 
     }
 </script>
