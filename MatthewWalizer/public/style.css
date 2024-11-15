@@ -1,4 +1,4 @@
-#mainpage {
+#mainPage {
     position: absolute;
     top: 0%;
     left: 0%;
@@ -7,7 +7,7 @@
     background-color: aqua;
 }
 
-#gamepage{
+#gamePage{
     position: absolute;
     top: 6%;
     left: 5%;
@@ -17,7 +17,16 @@
     border: 1px solid black;
 }
 
-#buttonpage{
+#timerBox {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 200px;
+    height: 100px;
+    background-color: dodgerblue;
+}
+
+#buttonPage{
     position: absolute;
     top: 30%;
     left: 30%;
@@ -26,7 +35,16 @@
     background-color: aquamarine;
 }
 
-.gamebutton {
+#scoreBox {
+    position: absolute;
+    top: 0%;
+    right: 0%;
+    width: 30%;
+    height: 100%;
+    background-color: cornflowerblue;
+}
+
+.gameButton {
     position: relative;
     width: 40px;
     height: 40px;
