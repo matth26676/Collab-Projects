@@ -78,6 +78,7 @@ function initGame() {
       time = 30;
       for (user in userList) {
         playerNumberList.splice(user, 1, userList[user])
+        io.emit("recievedata", { playerNumber: user} )
       }
       
       var gameId = setInterval(() => { runGame(io, gameId) }, 1000);
@@ -94,7 +95,7 @@ function runGame(io, gameId) {
     time--
     console.log(time)
 
-    io.emit("recievedata", { time: time })
+    io.emit("recievedata", { time: time})
 
     for (buttonNumber in buttonList) {
       io.emit("recievedata", { buttonNumber: buttonNumber, buttonValue: buttonList[buttonNumber] })
