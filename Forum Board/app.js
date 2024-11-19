@@ -3,6 +3,22 @@ const express = require('express')
 const app = express()
 const { v4: uuidv4 } = require('uuid')
 
+const db = new sqlite3.Database('data/data.db', (err) => {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log('Connected to the data/Database.db!')
+    }
+});
+
+const FBJS_URL = 'http://172.16.3.100:420'
+const THIS_URL = 'http://172.16.3.121:3000/login'
+
+function isAuthenticated(req, res, next) {
+	if (req.session.user) next()
+	else res.redirect(`${FBJS_URL}/oauth?redirectURL=${THIS_URL}`)
+}
+
 app.set('view engine', "ejs")
 
 app.get('/', (req, res) => {
