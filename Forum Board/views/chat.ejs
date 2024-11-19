@@ -3,7 +3,7 @@
 
 <head>
   <script>
-    const ws = new WebSocket('ws://localhost:443/');
+    const ws = new WebSocket('ws://172.16.3.121:443/');
     var name = '<%-username%>'
     ws.onopen = (open) => {
       ws.send(JSON.stringify({name: name}))

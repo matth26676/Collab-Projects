@@ -21,6 +21,7 @@ const { WebSocketServer } = require('ws')
 const wss = new WebSocketServer({ port: 443 })
 
 wss.on('connection', ws => {
+    console.log("Client connected");
     ws.send(JSON.stringify({ name: "Server", text: "Hello and welcome to the server!" }))
     ws.on('message', (message) => {
         message = JSON.parse(message)
@@ -32,6 +33,7 @@ wss.on('connection', ws => {
             broadcast(wss, {list: userList(wss)})
         }
         if (message.text) {
+            
             broadcast(wss, message)
             
             
