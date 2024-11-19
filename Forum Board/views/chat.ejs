@@ -20,8 +20,8 @@
         if (message.text) {
           if (message.time) {
             document.getElementById('messagelog').innerHTML +=
-            'Message from ' + message.name + ' on '+ message.time[0]+'/'+message.time[1]+'/'+message.time[2]
-             + ' at '+message.time[3]+':'+message.time[4]+':'+message.time[5]+'- ' + message.text + "<br>";
+            message.time[0]+'/'+message.time[1]+'/'+message.time[2]
+             + '-Message from ' + message.name +  ': ' + message.text + "<br>";
             
           } else {
             document.getElementById('messagelog').innerHTML +=
@@ -36,7 +36,7 @@
     function sendMessage(event) {
       var inputMessage = document.getElementById('message')
       let date = new Date()
-      ws.send(JSON.stringify({ name: name, text:inputMessage.value, time: [ date.getMonth()+1, date.getDate(), date.getFullYear(), date.getHours(), date.getMinutes(), date.getSeconds() ]}))
+      ws.send(JSON.stringify({ name: name, text:inputMessage.value, time: [ date.getMonth()+1, date.getDate(), date.getFullYear()]}))
       document.getElementById('message').value = ''
     }
   </script>
