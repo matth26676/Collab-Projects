@@ -1,6 +1,7 @@
 const { name } = require('ejs')
 const express = require('express')
 const app = express()
+const sqlite3 = require('sqlite3')
 const { v4: uuidv4 } = require('uuid')
 
 const db = new sqlite3.Database('data/data.db', (err) => {
@@ -24,6 +25,17 @@ app.set('view engine', "ejs")
 app.get('/', (req, res) => {
     res.render('index')
 })
+
+app.get('/conversation', (req, res) => {
+    db.get('SELECT COUNT(*) AS count FROM conversation', (err, row) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(row.count);
+            res.render('conversation', { conversationNumber: row.count });
+        }
+    });
+});
 
 app.get('/chat', (req, res) => {
     if (req.query.name) {

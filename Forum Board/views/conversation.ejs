@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="conversationPage"></div>
+    <script>
+        for (let conversation of `<%- conversationNumber %>`) {
+            let newConversation = document.createElement('button');
+            newConversation.classList.add('conversation');
+            newConversation.backgroundColor = 'white'
+
+            newConversation.addEventListener('click', () => {window.location.href = `/chat.ejs?conversationName=${conversation}`;});
+            document.getElementById('conversationPage').appendChild(newConversation)
+            console.log('New conversation added');
+            
+        }
+    </script>
+</body>
+
+</html>
