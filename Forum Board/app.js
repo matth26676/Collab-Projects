@@ -27,22 +27,48 @@ app.get('/', (req, res) => {
 })
 
 app.get('/conversation', (req, res) => {
-    db.get('SELECT COUNT(*) AS count FROM conversation', (err, row) => {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log(row.count);
-            res.render('conversation', { conversationNumber: row.count });
-        }
-    });
-});
-
-app.get('/chat', (req, res) => {
     if (req.query.name) {
-        res.render('chat', { username: req.query.name })
+        db.get('SELECT COUNT(*) AS count FROM conversation', (err, row) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(row.count);
+                res.render('conversation', { conversationNumber: row.count, name: req.query.name });
+            }
+        });
     } else {
         res.redirect('/')
     }
+});
+
+app.get('/chat', (req, res) => {
+    db.get('SELECT * FROM conversation WHERE uid=?', req.query.conversationNumber, (err, convoNumber) => {
+        if (err) {
+            console.log(err);
+        } else {
+            db.all('SELECT * FROM posts WHERE convo_id=?', convoNumber.uid, (err, post) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    //add a for loop to fix the following db.get
+                    console.log(post);
+                    
+                    db.get('SELECT * FROM users WHERE uid=?', post.poster, (err, row) => {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log(row);
+                        }
+                    });
+                    if (req.query.name) {
+                        res.render('chat', { username: req.query.name})
+                    } else {
+                        res.render('chat')
+                    }
+                }
+            });
+        }
+    });
 })
 
 const { WebSocketServer } = require('ws')

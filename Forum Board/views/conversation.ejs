@@ -15,7 +15,7 @@
             newConversation.classList.add('conversation');
             newConversation.backgroundColor = 'white'
 
-            newConversation.addEventListener('click', () => {window.location.href = `/chat.ejs?conversationName=${conversation}`;});
+            newConversation.addEventListener('click', () => {window.location.href = `/chat?conversationNumber=${conversation}&name=${`<%-name%>`}`;});
             document.getElementById('conversationPage').appendChild(newConversation)
             console.log('New conversation added');
             
