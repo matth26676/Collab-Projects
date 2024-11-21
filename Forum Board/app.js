@@ -15,7 +15,7 @@ const db = new sqlite3.Database('data/data.db', (err) => {
 });
 
 const FBJS_URL = 'http://172.16.3.100:420'
-const THIS_URL = 'http://172.16.3.121:3000/login'
+const THIS_URL = 'http://localhost:3000/login'
 
 function isAuthenticated(req, res, next) {
     if (req.session.user) next()
@@ -93,8 +93,35 @@ app.get('/userpage', (req, res) => {
             }
         });
     } else {
-        res.redirect('/conversation')
+        res.redirect('/conversation');
     }
+});
+
+app.get('/login', (req, res) => {
+    if (req.query.token) {
+        let tokenData = jwt.decode(req.query.token);
+        req.session.token = tokenData;
+        console.log(tokenData)
+        req.session.user = tokenData.username;
+        req.session.userid = tokenData.id;
+
+        db.get('SELECT * FROM users WHERE fb_name=?', req.session.user, (err, row) => {
+            if (err) {
+                console.log(err)
+                res.send("There big bad error:\n" + err)
+            } else if (!row) {
+                db.run('INSERT INTO users(fb_name, fb_id) VALUES(?, ?);', [req.session.user, req.session.userid], (err) => {
+                    if (err) {
+                        console.log(err)
+                        res.send("Database error:\n" + err)
+                    }
+                });
+            }
+        });
+        res.redirect('/');
+    } else {
+        res.redirect(`${AUTH_URL}?redirectURL=${THIS_URL}`);
+    };
 });
 
 // const { WebSocketServer } = require('ws')
