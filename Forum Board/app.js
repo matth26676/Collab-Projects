@@ -67,14 +67,34 @@ app.get('/chat', (req, res) => {
                     console.log(err);
                 } else {
                     if (req.query.name) {
-                        res.render('chat', { username: req.query.name, posts: post })
+                        res.render('chat', { username: req.query.name, posts: JSON.stringify(post) })
                     } else {
-                        res.render('chat', { posts: post })
+                        res.render('chat', { posts: JSON.stringify(post) })
                     }
                 }
             });
         }
     });
+});
+
+app.get('/userpage', (req, res) => {
+    if (req.query.name) {
+        db.get('SELECT * FROM users WHERE fb_name=?', req.query.name, (err, user) => {
+            if (err) {
+                console.log(err);
+            } else {
+                db.get('SELECT * FROM posts WHERE poster=?', user.uid, (err, post) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        res.render('userpage', { user: user, posts: JSON.stringify(post) });
+                    }
+                });
+            }
+        });
+    } else {
+        res.redirect('/conversation')
+    }
 });
 
 // const { WebSocketServer } = require('ws')
@@ -93,10 +113,10 @@ app.get('/chat', (req, res) => {
 //             broadcast(wss, {list: userList(wss)})
 //         }
 //         if (message.text) {
-            
+
 //             broadcast(wss, message)
-            
-            
+
+
 //         }
 //         if (message.name) {
 //             ws.name = message.name
@@ -105,7 +125,7 @@ app.get('/chat', (req, res) => {
 //     ws.on('close', ws => {
 //         broadcast(wss, {name: "Server", text: "A user has disconnected!"})
 //         broadcast(wss, {list: userList(wss)})
-        
+
 //     })
 // });
 
