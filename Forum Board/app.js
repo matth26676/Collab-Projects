@@ -3,6 +3,8 @@ const express = require('express')
 const app = express()
 const sqlite3 = require('sqlite3')
 const { v4: uuidv4 } = require('uuid')
+const jwt = require('jsonwebtoken')
+const session = require('express-session')
 
 const db = new sqlite3.Database('data/data.db', (err) => {
     if (err) {
@@ -16,14 +18,28 @@ const FBJS_URL = 'http://172.16.3.100:420'
 const THIS_URL = 'http://172.16.3.121:3000/login'
 
 function isAuthenticated(req, res, next) {
-	if (req.session.user) next()
-	else res.redirect(`${FBJS_URL}/oauth?redirectURL=${THIS_URL}`)
+    if (req.session.user) next()
+    else res.redirect(`${FBJS_URL}/oauth?redirectURL=${THIS_URL}`)
 }
+
+app.use(express.urlencoded({ extended: true }))
 
 app.set('view engine', "ejs")
 
-app.get('/', (req, res) => {
-    res.render('index')
+app.use(session({
+    secret: 'big raga the opp stoppa',
+    resave: false,
+    saveUninitialized: false
+}))
+
+
+app.get('/', isAuthenticated, (req, res) => {
+    try {
+        res.render('index', { user: req.session.user })
+    }
+    catch (error) {
+        res.send(error.message)
+    }
 })
 
 app.get('/conversation', (req, res) => {
@@ -52,7 +68,7 @@ app.get('/chat', (req, res) => {
                 } else {
                     //add a for loop to fix the following db.get
                     console.log(post);
-                    
+
                     db.get('SELECT * FROM users WHERE uid=?', post.poster, (err, row) => {
                         if (err) {
                             console.log(err);
@@ -61,7 +77,7 @@ app.get('/chat', (req, res) => {
                         }
                     });
                     if (req.query.name) {
-                        res.render('chat', { username: req.query.name})
+                        res.render('chat', { username: req.query.name })
                     } else {
                         res.render('chat')
                     }
@@ -70,6 +86,34 @@ app.get('/chat', (req, res) => {
         }
     });
 })
+
+app.get('/login', (req, res) => {
+    if (req.query.token) {
+        let tokenData = jwt.decode(req.query.token);
+        req.session.token = tokenData;
+        console.log(tokenData)
+        req.session.user = tokenData.username;
+        req.session.userid = tokenData.id;
+
+        db.get('SELECT * FROM users WHERE fb_name=?', req.session.user, (err, row) => {
+            if (err) {
+                console.log(err)
+                res.send("There big bad error:\n" + err)
+            } else if (!row) {
+                db.run('INSERT INTO users(fb_name, fb_id) VALUES(?, ?);', [req.session.user, req.session.userid], (err) => {
+                    if (err) {
+                        console.log(err)
+                        res.send("Database error:\n" + err)
+                    }
+                });
+            }
+        });
+
+        res.redirect('/');
+    } else {
+        res.redirect(`${AUTH_URL}?redirectURL=${THIS_URL}`);
+    };
+});
 
 const { WebSocketServer } = require('ws')
 const wss = new WebSocketServer({ port: 443 })
@@ -82,24 +126,24 @@ wss.on('connection', ws => {
         if (message.name) {
             ws.name = message.name
             if (!message.text) {
-                broadcast(wss, {name: "Server", text: ws.name+" has connected!"})
+                broadcast(wss, { name: "Server", text: ws.name + " has connected!" })
             }
-            broadcast(wss, {list: userList(wss)})
+            broadcast(wss, { list: userList(wss) })
         }
         if (message.text) {
-            
+
             broadcast(wss, message)
-            
-            
+
+
         }
         if (message.name) {
             ws.name = message.name
         }
     })
     ws.on('close', ws => {
-        broadcast(wss, {name: "Server", text: "A user has disconnected!"})
-        broadcast(wss, {list: userList(wss)})
-        
+        broadcast(wss, { name: "Server", text: "A user has disconnected!" })
+        broadcast(wss, { list: userList(wss) })
+
     })
 });
 
