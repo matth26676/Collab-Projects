@@ -3,6 +3,8 @@ const express = require('express')
 const app = express()
 const sqlite3 = require('sqlite3')
 const { v4: uuidv4 } = require('uuid')
+const jwt = require('jsonwebtoken')
+const session = require('express-session')
 
 const db = new sqlite3.Database('data/data.db', (err) => {
     if (err) {
@@ -16,14 +18,28 @@ const FBJS_URL = 'http://172.16.3.100:420'
 const THIS_URL = 'http://172.16.3.121:3000/login'
 
 function isAuthenticated(req, res, next) {
-	if (req.session.user) next()
-	else res.redirect(`${FBJS_URL}/oauth?redirectURL=${THIS_URL}`)
+    if (req.session.user) next()
+    else res.redirect(`${FBJS_URL}/oauth?redirectURL=${THIS_URL}`)
 }
+
+app.use(express.urlencoded({ extended: true }))
 
 app.set('view engine', "ejs")
 
-app.get('/', (req, res) => {
-    res.render('index')
+app.use(session({
+    secret: 'big raga the opp stoppa',
+    resave: false,
+    saveUninitialized: false
+}))
+
+
+app.get('/', isAuthenticated, (req, res) => {
+    try {
+        res.render('index', { user: req.session.user })
+    }
+    catch (error) {
+        res.send(error.message)
+    }
 })
 
 app.get('/conversation', (req, res) => {
@@ -59,7 +75,7 @@ app.get('/chat', (req, res) => {
             });
         }
     });
-})
+});
 
 // const { WebSocketServer } = require('ws')
 // const wss = new WebSocketServer({ port: 443 })
