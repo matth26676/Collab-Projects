@@ -15,7 +15,7 @@ const db = new sqlite3.Database('data/data.db', (err) => {
 });
 
 const FBJS_URL = 'http://172.16.3.100:420'
-const THIS_URL = 'http://172.16.3.121:3000/login'
+const THIS_URL = 'http://localhost:3000/login'
 
 function isAuthenticated(req, res, next) {
     if (req.session.user) next()
@@ -62,30 +62,20 @@ app.get('/chat', (req, res) => {
         if (err) {
             console.log(err);
         } else {
-            db.all('SELECT * FROM posts WHERE convo_id=?', convoNumber.uid, (err, post) => {
+            db.all('SELECT * FROM posts INNER JOIN users ON posts.poster=users.uid WHERE convo_id=? ORDER BY time', convoNumber.uid, (err, post) => {
                 if (err) {
                     console.log(err);
                 } else {
-                    //add a for loop to fix the following db.get
-                    console.log(post);
-
-                    db.get('SELECT * FROM users WHERE uid=?', post.poster, (err, row) => {
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            console.log(row);
-                        }
-                    });
                     if (req.query.name) {
-                        res.render('chat', { username: req.query.name })
+                        res.render('chat', { username: req.query.name, posts: post })
                     } else {
-                        res.render('chat')
+                        res.render('chat', { posts: post })
                     }
                 }
             });
         }
     });
-})
+});
 
 app.get('/login', (req, res) => {
     if (req.query.token) {
@@ -115,37 +105,37 @@ app.get('/login', (req, res) => {
     };
 });
 
-const { WebSocketServer } = require('ws')
-const wss = new WebSocketServer({ port: 443 })
+// const { WebSocketServer } = require('ws')
+// const wss = new WebSocketServer({ port: 443 })
 
-wss.on('connection', ws => {
-    console.log("Client connected");
-    ws.send(JSON.stringify({ name: "Server", text: "Hello and welcome to the server!" }))
-    ws.on('message', (message) => {
-        message = JSON.parse(message)
-        if (message.name) {
-            ws.name = message.name
-            if (!message.text) {
-                broadcast(wss, { name: "Server", text: ws.name + " has connected!" })
-            }
-            broadcast(wss, { list: userList(wss) })
-        }
-        if (message.text) {
-
-            broadcast(wss, message)
-
-
-        }
-        if (message.name) {
-            ws.name = message.name
-        }
-    })
-    ws.on('close', ws => {
-        broadcast(wss, { name: "Server", text: "A user has disconnected!" })
-        broadcast(wss, { list: userList(wss) })
-
-    })
-});
+// wss.on('connection', ws => {
+//     console.log("Client connected");
+//     ws.send(JSON.stringify({ name: "Server", text: "Hello and welcome to the server!" }))
+//     ws.on('message', (message) => {
+//         message = JSON.parse(message)
+//         if (message.name) {
+//             ws.name = message.name
+//             if (!message.text) {
+//                 broadcast(wss, {name: "Server", text: ws.name+" has connected!"})
+//             }
+//             broadcast(wss, {list: userList(wss)})
+//         }
+//         if (message.text) {
+            
+//             broadcast(wss, message)
+            
+            
+//         }
+//         if (message.name) {
+//             ws.name = message.name
+//         }
+//     })
+//     ws.on('close', ws => {
+//         broadcast(wss, {name: "Server", text: "A user has disconnected!"})
+//         broadcast(wss, {list: userList(wss)})
+        
+//     })
+// });
 
 
 app.listen(3000, () => {

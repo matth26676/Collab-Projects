@@ -2,49 +2,12 @@
 <html lang="en">
 
 <head>
-  <script>
-    const ws = new WebSocket('ws://172.16.3.121:443/');
-    var name = '<%-username%>'
-    ws.onopen = (open) => {
-      ws.send(JSON.stringify({name: name}))
-    }
-    ws.onmessage = (message) => {
-      var message = JSON.parse(message.data)
-      if (message.list) {
-        document.getElementById('userlist').innerHTML = "Users Online: " + "<br>"
-        for (user in message.list) {
-          document.getElementById('userlist').innerHTML +=
-          message.list[user] + "<br>";
-        }
-      } else {
-        if (message.text) {
-          if (message.time) {
-            document.getElementById('messagelog').innerHTML +=
-            message.time[0]+'/'+message.time[1]+'/'+message.time[2]
-             + '-Message from ' + message.name +  ': ' + message.text + "<br>";
-            
-          } else {
-            document.getElementById('messagelog').innerHTML +=
-            'Message from ' + message.name+': ' + message.text + "<br>";
-          }
-        }
-      }
-    }; 
-    ws.addEventListener("open", () => {
-      console.log("We are connected");
-    });
-    function sendMessage(event) {
-      var inputMessage = document.getElementById('message')
-      let date = new Date()
-      ws.send(JSON.stringify({ name: name, text:inputMessage.value, time: [ date.getMonth()+1, date.getDate(), date.getFullYear()]}))
-      document.getElementById('message').value = ''
-    }
-  </script>
+  
 
-  <style>
-    #mainpage {
-      position: absolute;
-      top: 0%;
+<style>
+ #mainpage {
+    position: absolute;
+    top: 0%;
       left: 0%;
       width: 100%;
       height: 100%;
@@ -108,21 +71,73 @@
       border: 1px solid black;
       overflow-y: scroll;
     }
+
+    .messageElements {
+      position: relative;
+    }
   </style>
 </head>
 
 <body>
   <div id="mainpage">
     <div id="subpage">
-    <div id="sendmessage">
+    <div id="sendmessage" onload="isName()" class="messageElements">
       <label for="message">Enter Message:</label>
-      <input type="text" id="message" name="message" required><br><br>
-      <button id="messagebutton" onclick="sendMessage()">Send Message</button>
+      <input type="text" id="message" name="message" class="messageElements" required><br><br>
+      <button id="messagebutton" onclick="sendMessage()" class="messageElements">Send Message</button>
     </div>
     <div id="messagelog"></div>
     <div id="userlist"></div>
     </div>
   </div>
+
+  <script>
+    // const ws = new WebSocket('ws://172.16.3.121:443/');
+    // ws.onopen = (open) => {
+    //   ws.send(JSON.stringify({name: name}))
+    // }
+    // ws.onmessage = (message) => {
+    //   var message = JSON.parse(message.data)
+    //   if (message.list) {
+    //     document.getElementById('userlist').innerHTML = "Users Online: " + "<br>"
+    //     for (user in message.list) {
+    //       document.getElementById('userlist').innerHTML +=
+    //       message.list[user] + "<br>";
+    //     }
+    //   } else {
+    //     if (message.text) {
+    //       if (message.time) {
+    //         document.getElementById('messagelog').innerHTML +=
+    //         message.time[0]+'/'+message.time[1]+'/'+message.time[2]
+    //         + '-Message from ' + message.name +  ': ' + message.text + "<br>";
+            
+    //       } else {
+    //         document.getElementById('messagelog').innerHTML +=
+    //         'Message from ' + message.name+': ' + message.text + "<br>";
+    //       }
+    //     }
+    //   }
+    // }; 
+    // ws.addEventListener("open", () => {
+    //   console.log("We are connected");
+    // });
+    function sendMessage(event) {
+      var inputMessage = document.getElementById('message')
+      let date = new Date.now()
+      // ws.send(JSON.stringify({ name: name, text:inputMessage.value, time: [ date.getMonth()+1, date.getDate(), date.getFullYear()]}))
+      document.getElementById('message').value = ''
+    }
+    function isName() {
+      let urlParams = new URLSearchParams(window.location.search);
+      let name = urlParams.get('name');
+
+      if (name) {
+        document.getElementById('sendmessage').style.visibility = 'visible';
+      } else {
+        document.getElementById('sendmessage').style.visibility = 'hidden';
+      }
+    }
+    </script>
 </body>
 
 
