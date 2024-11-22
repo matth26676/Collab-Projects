@@ -88,40 +88,25 @@
   </div>
 
   <script>
-    // const ws = new WebSocket('ws://172.16.3.121:443/');
-    // ws.onopen = (open) => {
-    //   ws.send(JSON.stringify({name: name}))
-    // }
-    // ws.onmessage = (message) => {
-    //   var message = JSON.parse(message.data)
-    //   if (message.list) {
-    //     document.getElementById('userlist').innerHTML = "Users Online: " + "<br>"
-    //     for (user in message.list) {
-    //       document.getElementById('userlist').innerHTML +=
-    //       message.list[user] + "<br>";
-    //     }
-    //   } else {
-    //     if (message.text) {
-    //       if (message.time) {
-    //         document.getElementById('messagelog').innerHTML +=
-    //         message.time[0]+'/'+message.time[1]+'/'+message.time[2]
-    //         + '-Message from ' + message.name +  ': ' + message.text + "<br>";
-            
-    //       } else {
-    //         document.getElementById('messagelog').innerHTML +=
-    //         'Message from ' + message.name+': ' + message.text + "<br>";
-    //       }
-    //     }
-    //   }
-    // }; 
-    // ws.addEventListener("open", () => {
-    //   console.log("We are connected");
-    // });
-    function sendMessage(event) {
-      var inputMessage = document.getElementById('message')
-      let date = new Date.now()
-      // ws.send(JSON.stringify({ name: name, text:inputMessage.value, time: [ date.getMonth()+1, date.getDate(), date.getFullYear()]}))
-      document.getElementById('message').value = ''
+    function sendMessage() {
+      var inputMessage = document.getElementById('message').value;
+      let date = new Date().toString();
+      let time = Date.now();
+      document.getElementById('message').value = '';
+
+      fetch('/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: inputMessage,
+          time: time,
+          date: date,
+          name: new URLSearchParams(window.location.search).get('name'),
+          conversationNumber: new URLSearchParams(window.location.search).get('conversationNumber')
+        })
+      })
     }
     function isName() {
       let urlParams = new URLSearchParams(window.location.search);
@@ -133,38 +118,73 @@
         document.getElementById('sendmessage').style.visibility = 'hidden';
       }
     }
+    // Parse the posts data from the server-side template
     posts = JSON.parse(`<%- posts %>`)
+
+    // Loop through each message in the posts array
     for (message in posts) {
-            console.log(posts[message]);
-            let newMessageBox = document.createElement('div'); 
-            let newMessage = document.createElement('div');
-            let newUserPage = document.createElement('button');
-            
-            newMessageBox.style.backgroundColor = 'white';
-            newMessageBox.style.position = 'relative';
-            newMessageBox.style.height = '60px';
-            newMessage.style.backgroundColor = 'lightgray';
-            newMessage.style.position = 'absolute';
-            newMessage.style.left = '20%';
-            newMessage.style.width = '80%';
-            newMessage.style.height = '100%';
-            newMessage.style.contentalign = 'center';
-            newMessage.textContent = posts[message].fb_name + ' says: ' +posts[message].content;
-            newUserPage.style.position = 'absolute';
-            newUserPage.style.left = '0%';
-            newUserPage.style.width = '20%';
-            newUserPage.style.height = '100%';
-            newUserPage.textContent = posts[message].fb_name+"'s User Page";
-            newUserPage.onclick = function() {
-              window.location.href = `/userpage?searchName=${posts[message].fb_name}`;
-            };
-            
-            newMessageBox.appendChild(newMessage);
-            newMessageBox.appendChild(newUserPage);
-            
-            document.getElementById('messagelog').appendChild(newMessageBox);
-            console.log('New message box added');
-        }
+      console.log(posts[message]);
+
+      // Create a new div element for the message box
+      let newMessageBox = document.createElement('div');
+
+      // Create a new div element for the message content
+      let newMessage = document.createElement('div');
+
+      // Create a new div element for the date box
+      let newDateBox = document.createElement('div');
+
+      // Create a new button element for the user page link
+      let newUserPage = document.createElement('button');
+
+      // Style the date box
+      newDateBox.style.position = 'absolute';
+      newDateBox.style.left = '0%';
+      newDateBox.style.bottom = '0%';
+      newDateBox.style.width = '100%';
+      newDateBox.style.height = '30%';
+      newDateBox.style.backgroundColor = 'darkgray';
+      newDateBox.style.fontSize = '14px';
+      newDateBox.style.textAlign = 'center';
+      newDateBox.textContent = posts[message].date;
+
+      // Style the message box
+      newMessageBox.style.backgroundColor = 'white';
+      newMessageBox.style.position = 'relative';
+      newMessageBox.style.height = '60px';
+
+      // Style the message content
+      newMessage.style.backgroundColor = 'lightgray';
+      newMessage.style.position = 'absolute';
+      newMessage.style.left = '20%';
+      newMessage.style.width = '80%';
+      newMessage.style.height = '100%';
+      newMessage.style.contentalign = 'center';
+      newMessage.textContent = posts[message].fb_name + ' says: ' + posts[message].content;
+
+      // Style the user page button
+      newUserPage.style.position = 'absolute';
+      newUserPage.style.left = '0%';
+      newUserPage.style.width = '20%';
+      newUserPage.style.height = '100%';
+      newUserPage.textContent = posts[message].fb_name + "'s User Page";
+
+      // Set the onclick event for the user page button
+      newUserPage.onclick = function() {
+        window.location.href = `/userpage?searchName=${posts[message].fb_name}`;
+      };
+
+      // Append the date box to the message content
+      newMessage.appendChild(newDateBox);
+
+      // Append the message content and user page button to the message box
+      newMessageBox.appendChild(newMessage);
+      newMessageBox.appendChild(newUserPage);
+
+      // Append the message box to the message log
+      document.getElementById('messagelog').appendChild(newMessageBox);
+      console.log('New message box added');
+    }
     </script>
 </body>
 

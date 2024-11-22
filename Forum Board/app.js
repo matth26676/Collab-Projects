@@ -18,11 +18,13 @@ const FBJS_URL = 'http://172.16.3.100:420'
 const THIS_URL = 'http://localhost:3000/login'
 
 function isAuthenticated(req, res, next) {
-    if (req.session.user) next()
+    if (req.query.name) next()
     else res.redirect(`${FBJS_URL}/oauth?redirectURL=${THIS_URL}`)
 }
 
 app.use(express.urlencoded({ extended: true }))
+
+app.use(express.json());
 
 app.set('view engine', "ejs")
 
@@ -62,6 +64,18 @@ app.get('/chat', isAuthenticated, (req, res) => {
         }
     });
 });
+
+app.post('/chat', (req, res) => {
+    db.get('SELECT * FROM users WHERE fb_name=?', req.body.name, (err, uid) => {
+        db.run('INSERT INTO posts(poster, convo_id, content, time, date) VALUES(?, ?, ?, ?, ?);', [uid.uid, req.body.conversationNumber, req.body.message, req.body.time, req.body.date], (err) => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log('Success');
+            }
+        })
+    })
+})
 
 app.get('/userpage', (req, res) => {
     if (req.query.searchName) {
@@ -104,7 +118,7 @@ app.get('/login', (req, res) => {
                 });
             }
         });
-        res.redirect('/');
+        res.redirect(`/?name=${req.session.user}`);
     } else {
         res.redirect(`${AUTH_URL}?redirectURL=${THIS_URL}`);
     };
@@ -146,19 +160,3 @@ app.get('/login', (req, res) => {
 app.listen(3000, () => {
     console.log(`Listening on ${3000}`)
 });
-
-function broadcast(wss, message) {
-    for (client of wss.clients) {
-        client.send(JSON.stringify(message))
-    };
-}
-
-function userList(wss) {
-    var userlist = []
-    for (client of wss.clients) {
-        if (client.name) {
-            userlist.push(client.name)
-        }
-    }
-    return userlist
-}
