@@ -32,32 +32,18 @@ app.use(session({
     saveUninitialized: false
 }))
 
-
 app.get('/', isAuthenticated, (req, res) => {
-    try {
-        res.render('index', { user: req.session.user })
-    }
-    catch (error) {
-        res.send(error.message)
-    }
-})
-
-app.get('/conversation', (req, res) => {
-    if (req.query.name) {
-        db.get('SELECT COUNT(*) AS count FROM conversation', (err, row) => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(row.count);
-                res.render('conversation', { conversationNumber: row.count, name: req.query.name });
-            }
-        });
-    } else {
-        res.redirect('/')
-    }
+    db.get('SELECT COUNT(*) AS count FROM conversation', (err, row) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(row.count);
+            res.render('conversation', { conversationNumber: row.count, name: req.query.name });
+        }
+    });
 });
 
-app.get('/chat', (req, res) => {
+app.get('/chat', isAuthenticated, (req, res) => {
     db.get('SELECT * FROM conversation WHERE uid=?', req.query.conversationNumber, (err, convoNumber) => {
         if (err) {
             console.log(err);
@@ -78,8 +64,8 @@ app.get('/chat', (req, res) => {
 });
 
 app.get('/userpage', (req, res) => {
-    if (req.query.name) {
-        db.get('SELECT * FROM users WHERE fb_name=?', req.query.name, (err, user) => {
+    if (req.query.searchName) {
+        db.get('SELECT * FROM users WHERE fb_name=?', req.query.searchName, (err, user) => {
             if (err) {
                 console.log(err);
             } else {
@@ -93,7 +79,7 @@ app.get('/userpage', (req, res) => {
             }
         });
     } else {
-        res.redirect('/conversation');
+        res.redirect('/');
     }
 });
 

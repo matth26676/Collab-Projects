@@ -156,7 +156,7 @@
             newUserPage.style.height = '100%';
             newUserPage.textContent = posts[message].fb_name+"'s User Page";
             newUserPage.onclick = function() {
-              window.location.href = `/userpage?user=${posts[message].fb_name}`;
+              window.location.href = `/userpage?searchName=${posts[message].fb_name}`;
             };
             
             newMessageBox.appendChild(newMessage);
