@@ -1,11 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+
+    <style>
+        #mainpage {
+            position: absolute;
+            top: 0%;
+            left: 0%;
+            width: 100%;
+            height: 100%;
+            background-color: aqua;
+        }
+
+        #subpage {
+            position: absolute;
+            top: 4%;
+            left: 2%;
+            height: 92%;
+            width: 96%;
+            border: 5px solid aliceblue;
+            border-radius: 10%;
+            background-color: cadetblue;
+        }
+
+        #message {
+            width: 60%;
+            height: 100%;
+        }
+
+        #messagebutton {
+            width: 50%;
+            height: 30%;
+        }
+
+        #messagebutton:hover {
+            cursor: pointer;
+        }
+
+        #sendmessage {
+            position: absolute;
+            top: 10%;
+            left: 36%;
+            width: 20%;
+            height: 10%;
+            align-content: center;
+            text-align: center;
+        }
+
+        #messagelog {
+            position: absolute;
+            top: 10%;
+            left: 58%;
+            width: 40%;
+            height: 80%;
+            border: 1px solid black;
+            overflow-y: scroll;
+            overflow-x: scroll;
+            background-color: aqua;
+        }
+
+        #userlist {
+            position: absolute;
+            top: 10%;
+            left: 5%;
+            width: 30%;
+            height: 80%;
+            background-color: aquamarine;
+            border: 1px solid black;
+            overflow-y: scroll;
+        }
+    </style>
+
 </head>
+
 <body>
-    
+
+
+    <div id="mainpage">
+        <div id="subpage">
+            <div id="sendmessage" onload="isName()" class="messageElements">
+                <label for="message">Enter Message:</label>
+                <input type="text" id="message" name="message" class="messageElements" required><br><br>
+                <button id="messagebutton" onclick="sendMessage()" class="messageElements">Send Message</button>
+            </div>
+            <div id="messagelog"></div>
+            <div id="userlist"></div>
+        </div>
+    </div>
+
+
+    <script>
+        posts = JSON.parse(`<%- posts %>`)
+        for (message in posts) {
+            console.log(posts[message]);
+            let newMessageBox = document.createElement('div');
+            let newMessage = document.createElement('div');
+            let newUserPage = document.createElement('button');
+
+            newMessageBox.style.backgroundColor = 'white';
+            newMessageBox.style.position = 'relative';
+            newMessageBox.style.height = '60px';
+            newMessage.style.backgroundColor = 'lightgray';
+            newMessage.style.position = 'absolute';
+            newMessage.style.left = '20%';
+            newMessage.style.width = '80%';
+            newMessage.style.height = '100%';
+            newMessage.style.contentalign = 'center';
+            newUserPage.style.position = 'absolute';
+            newUserPage.style.left = '0%';
+            newUserPage.style.width = '20%';
+            newUserPage.style.height = '100%';
+            newMessage.textContent = posts[message].fb_name + ' says: ' + posts[message].content;
+            newUserPage.textContent = posts[message].fb_name + "'s Post";
+            newUserPage.onclick = function () {
+                // window.location.href = `/userpage?searchName=${posts[message].fb_name}`;
+                window.location.href = `/chat?conversationNumber=${posts[message].convo_id}&name=${posts[message].fb_name}`;
+            };
+
+            newMessageBox.appendChild(newMessage);
+            newMessageBox.appendChild(newUserPage);
+
+            document.getElementById('messagelog').appendChild(newMessageBox);
+            console.log('New message box added');
+        }
+    </script>
 </body>
+
 </html>
