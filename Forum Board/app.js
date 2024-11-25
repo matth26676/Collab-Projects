@@ -45,6 +45,17 @@ app.get('/', isAuthenticated, (req, res) => {
     });
 });
 
+app.post('/', (req, res) => {
+    db.run('INSERT INTO conversation (title) VALUES(?)', req.body.newConversationName, (err) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('Success');
+            res.render('conversation', {name: req.query.name})
+        }
+    });
+});
+
 app.get('/chat', isAuthenticated, (req, res) => {
     db.get('SELECT * FROM conversation WHERE uid=?', req.query.conversationNumber, (err, convoNumber) => {
         if (err) {
