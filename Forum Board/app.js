@@ -94,10 +94,13 @@ app.get('/userpage', (req, res) => {
             if (err) {
                 console.log(err);
             } else {
-                db.get('SELECT * FROM posts WHERE poster=?', user.uid, (err, post) => {
+                console.log(user);
+                db.all('SELECT * FROM posts WHERE poster=?', user.uid, (err, post) => {
                     if (err) {
                         console.log(err);
                     } else {
+                        console.log(post);
+                        
                         res.render('userpage', { user: user, posts: JSON.stringify(post) });
                     }
                 });

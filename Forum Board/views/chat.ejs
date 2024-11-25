@@ -71,12 +71,28 @@
       border: 1px solid black;
       overflow-y: scroll;
     }
+
+    #conversationButton {
+      position: absolute;
+      top: 2%;
+      left: 5%;
+      width: 10%;
+      height: 5%;
+      background-color: darkgray;
+      border: 1px solid black;
+    }
+
+    #conversationButton:hover {
+      cursor: pointer;
+      background-color: gray;
+    }
   </style>
 </head>
 
 <body>
   <div id="mainpage">
     <div id="subpage">
+    <button id="conversationButton" onclick="location.href=`/?name=${new URLSearchParams(window.location.search).get('name')}`">Back to Conversation List</button>
     <div id="sendmessage" onload="isName()" class="messageElements">
       <label for="message">Enter Message:</label>
       <input type="text" id="message" name="message" class="messageElements" required><br><br>
@@ -90,24 +106,28 @@
   <script>
     function sendMessage() {
       var inputMessage = document.getElementById('message').value;
-      let date = new Date().toString();
-      let time = Date.now();
-      document.getElementById('message').value = '';
+      if (inputMessage.trim() != '') {
+        let date = new Date().toString();
+        let time = Date.now();
+        document.getElementById('message').value = '';
 
-      fetch('/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: inputMessage,
-          time: time,
-          date: date,
-          name: new URLSearchParams(window.location.search).get('name'),
-          conversationNumber: new URLSearchParams(window.location.search).get('conversationNumber')
+        fetch('/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: inputMessage,
+            time: time,
+            date: date,
+            name: new URLSearchParams(window.location.search).get('name'),
+            conversationNumber: new URLSearchParams(window.location.search).get('conversationNumber')
+          })
         })
-      })
-      location.reload();
+        location.reload();
+      } else {
+        alert('Please enter a message.');
+      }
     }
     function isName() {
       let urlParams = new URLSearchParams(window.location.search);
@@ -173,7 +193,7 @@
 
       // Set the onclick event for the user page button
       newUserPage.onclick = function() {
-        window.location.href = `/userpage?searchName=${user}`;
+        window.location.href = `/userpage?searchName=${user}&name=${new URLSearchParams(window.location.search).get('name')}`;
       };
 
       // Append the date box to the message content
