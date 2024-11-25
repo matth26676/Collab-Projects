@@ -35,12 +35,12 @@ app.use(session({
 }))
 
 app.get('/', isAuthenticated, (req, res) => {
-    db.get('SELECT COUNT(*) AS count FROM conversation', (err, row) => {
+    db.all('SELECT * FROM conversation', (err, row) => {
         if (err) {
             console.log(err);
         } else {
-            console.log(row.count);
-            res.render('conversation', { conversationNumber: row.count, name: req.query.name });
+            console.log(row);
+            res.render('conversation', { conversationNumber: JSON.stringify(row), name: req.query.name });
         }
     });
 });

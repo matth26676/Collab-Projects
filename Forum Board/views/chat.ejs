@@ -124,6 +124,7 @@
     // Loop through each message in the posts array
     for (message in posts) {
       console.log(posts[message]);
+      let user = posts[message].fb_name;
 
       // Create a new div element for the message box
       let newMessageBox = document.createElement('div');
@@ -148,12 +149,12 @@
       newDateBox.style.textAlign = 'center';
       newDateBox.textContent = posts[message].date;
 
-      // Style the message box
+      // Style the whole message box
       newMessageBox.style.backgroundColor = 'white';
       newMessageBox.style.position = 'relative';
       newMessageBox.style.height = '60px';
 
-      // Style the message content
+      // Style the message box
       newMessage.style.backgroundColor = 'lightgray';
       newMessage.style.position = 'absolute';
       newMessage.style.left = '20%';
@@ -171,7 +172,7 @@
 
       // Set the onclick event for the user page button
       newUserPage.onclick = function() {
-        window.location.href = `/userpage?searchName=${posts[message].fb_name}`;
+        window.location.href = `/userpage?searchName=${user}`;
       };
 
       // Append the date box to the message content
