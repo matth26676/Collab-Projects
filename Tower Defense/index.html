@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Defense</title>
+
+    <style>
+        #mainPage {
+            position: absolute;
+        }
+
+        #gameBoard {
+            position: absolute;
+            background-color: limegreen;
+            top: 10%;
+            left: 5%;
+            width: 90%;
+            height: 80%;
+        }
+
+        .emptyCell {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            border: 1px solid black;
+            display: inline-block;
+            background-color: lightgreen;
+            margin: 0;
+            padding: 0;
+        }
+        .pathCell {
+            width: 50px;
+            height: 50px;
+            display: inline-block;
+            background-color: burlywood;
+        }
+    </style>
+</head>
+<body>
+    
+    <script>
+        const rows = 10;
+        const cols = 10;
+        const grid = [];
+
+        for (let i = 0; i < rows; i++) {
+            const row = [];
+            for (let j = 0; j < cols; j++) {
+                row.push({ hasTower: false, hasEnemy: false , hasPath: false});
+            }
+            grid.push(row);
+        }
+
+        console.log(grid);
+        const gameBoard = document.createElement('div');
+        gameBoard.id = 'gameBoard';
+        document.body.appendChild(gameBoard);
+
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                const cell = document.createElement('div');
+                if (grid[i][j].hasPath) {
+                    cell.className = 'pathCell';
+                } else {
+                    cell.className = 'emptyCell';
+                }
+                gameBoard.appendChild(cell);
+            }
+        }
+    </script>
+</body>
+</html>
