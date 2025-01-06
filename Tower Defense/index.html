@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,28 +9,33 @@
     <style>
         #mainPage {
             position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: lightblue;
         }
 
         #gameBoard {
-            position: absolute;
+            position: relative;
             background-color: limegreen;
-            top: 10%;
-            left: 5%;
-            width: 90%;
-            height: 80%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 550px;
+            height: 550px;
         }
 
         .emptyCell {
-            position: relative;
+            position: absolute;
             width: 50px;
             height: 50px;
-            border: 1px solid black;
             display: inline-block;
             background-color: lightgreen;
-            margin: 0;
-            padding: 0;
         }
+
         .pathCell {
+            position: absolute;
             width: 50px;
             height: 50px;
             display: inline-block;
@@ -37,29 +43,64 @@
         }
     </style>
 </head>
+
 <body>
-    
+    <div id="mainPage"></div>
+
     <script>
-        const rows = 10;
-        const cols = 10;
+        const rows = 11;
+        const cols = 11;
         const grid = [];
 
         for (let i = 0; i < rows; i++) {
             const row = [];
             for (let j = 0; j < cols; j++) {
-                row.push({ hasTower: false, hasEnemy: false , hasPath: false});
+                row.push({ hasPath: false, isStart: false, isEnd: false });
             }
             grid.push(row);
         }
 
-        console.log(grid);
+        grid[2][0].isStart = true;
+        grid[2][0].hasPath = true;
+        grid[2][1].hasPath = true;
+        grid[2][2].hasPath = true;
+        grid[2][3].hasPath = true;
+        grid[2][4].hasPath = true;
+        grid[2][5].hasPath = true;
+        grid[2][6].hasPath = true;
+        grid[2][7].hasPath = true;
+        grid[2][8].hasPath = true;
+        grid[3][8].hasPath = true;
+        grid[4][8].hasPath = true;
+        grid[5][8].hasPath = true;
+        grid[5][7].hasPath = true;
+        grid[5][6].hasPath = true;
+        grid[5][5].hasPath = true;
+        grid[5][4].hasPath = true;
+        grid[5][3].hasPath = true;
+        grid[5][2].hasPath = true;
+        grid[6][2].hasPath = true;
+        grid[7][2].hasPath = true;
+        grid[8][2].hasPath = true;
+        grid[8][3].hasPath = true;
+        grid[8][4].hasPath = true;
+        grid[8][5].hasPath = true;
+        grid[8][6].hasPath = true;
+        grid[8][7].hasPath = true;
+        grid[8][8].hasPath = true;
+        grid[8][9].hasPath = true;
+        grid[8][10].hasPath = true;
+        grid[8][10].isEnd = true;
+
         const gameBoard = document.createElement('div');
         gameBoard.id = 'gameBoard';
-        document.body.appendChild(gameBoard);
+        document.getElementById('mainPage').appendChild(gameBoard);
 
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
                 const cell = document.createElement('div');
+                cell.style.top = `${i * 50}px`;
+                cell.style.left = `${j * 50}px`;
                 if (grid[i][j].hasPath) {
                     cell.className = 'pathCell';
                 } else {
@@ -68,6 +109,277 @@
                 gameBoard.appendChild(cell);
             }
         }
+
+        class Enemy {
+            constructor(y, x, health, speed, options) {
+                this.x = x;
+                this.y = y;
+                this.health = health;
+                this.speed = speed;
+                this.nextX = this.x;
+                this.nextY = this.y;
+                this.targetX = 0;
+                this.targetY = 0;
+                this.element = document.createElement('div');
+                this.element.className = 'enemy';
+                this.element.style.width = '50px';
+                this.element.style.height = '50px';
+                this.element.style.backgroundColor = 'red';
+                this.element.style.border = '2px solid black';
+                this.element.style.position = 'absolute';
+                this.element.instance = this;
+                this.updatePosition();
+                gameBoard.appendChild(this.element);
+                if (options.healthBar) {
+                    this.healthBar = document.createElement('div');
+                    this.healthBar.style.position = 'absolute';
+                    this.healthBar.style.width = '50px';
+                    this.healthBar.style.height = '5px';
+                    this.healthBar.style.backgroundColor = 'green';
+                    this.healthBar.style.top = '-10px';
+                    this.healthBar.style.left = '0';
+                    this.element.appendChild(this.healthBar);
+                }
+            }
+
+            updateHealthBar() {
+                this.healthBar.style.width = `${Math.max(0, Math.min(50, (this.health / 100) * 50))}px`;
+            }
+
+            updatePosition() {
+                this.element.style.top = `${this.y * 50}px`;
+                this.element.style.left = `${this.x * 50}px`;
+            }
+
+            move() {
+
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        if (grid[i][j].isEnd) {
+                            this.targetX = j;
+                            this.targetY = i;
+                        }
+                    }
+                }
+
+                if (this.x === this.targetX && this.y === this.targetY) {
+                    this.element.remove();
+                    clearInterval(this.intervalId);
+                }
+
+                if (this.x === this.nextX && this.y === this.nextY) {
+                    const openSet = [];
+                    const closedSet = [];
+                    const startNode = { x: this.x, y: this.y, g: 0, h: 0, f: 0, parent: null };
+                    const endNode = { x: this.targetX, y: this.targetY, g: 0, h: 0, f: 0, parent: null };
+                    openSet.push(startNode);
+
+                    const heuristic = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+
+                    while (openSet.length > 0) {
+                        let lowestIndex = 0;
+                        for (let i = 0; i < openSet.length; i++) {
+                            if (openSet[i].f < openSet[lowestIndex].f) {
+                                lowestIndex = i;
+                            }
+                        }
+
+                        const currentNode = openSet[lowestIndex];
+
+                        if (currentNode.x === endNode.x && currentNode.y === endNode.y) {
+                            let temp = currentNode;
+                            while (temp.parent) {
+                                this.nextX = temp.x;
+                                this.nextY = temp.y;
+                                temp = temp.parent;
+                            }
+                            break;
+                        }
+
+                        openSet.splice(lowestIndex, 1);
+                        closedSet.push(currentNode);
+
+                        const neighbors = [
+                            { x: currentNode.x + 1, y: currentNode.y },
+                            { x: currentNode.x - 1, y: currentNode.y },
+                            { x: currentNode.x, y: currentNode.y + 1 },
+                            { x: currentNode.x, y: currentNode.y - 1 }
+                        ];
+
+                        for (const neighbor of neighbors) {
+                            if (neighbor.x < 0 || neighbor.x >= cols || neighbor.y < 0 || neighbor.y >= rows) {
+                                continue;
+                            }
+
+                            if (!grid[neighbor.y][neighbor.x].hasPath) {
+                                continue;
+                            }
+
+                            if (closedSet.find(node => node.x === neighbor.x && node.y === neighbor.y)) {
+                                continue;
+                            }
+
+                            const gScore = currentNode.g + 1;
+                            let gScoreIsBest = false;
+
+                            let neighborNode = openSet.find(node => node.x === neighbor.x && node.y === neighbor.y);
+                            if (!neighborNode) {
+                                neighborNode = { ...neighbor, g: gScore, h: heuristic(neighbor, endNode), f: gScore + heuristic(neighbor, endNode), parent: currentNode };
+                                openSet.push(neighborNode);
+                                gScoreIsBest = true;
+                            } else if (gScore < neighborNode.g) {
+                                neighborNode.g = gScore;
+                                gScoreIsBest = true;
+                            }
+
+                            if (gScoreIsBest) {
+                                neighborNode.parent = currentNode;
+                                neighborNode.f = neighborNode.g + neighborNode.h;
+                            }
+                        }
+                    }
+                }
+
+                // Move towards the target cell
+                if (this.x < this.nextX) {
+                    this.x += this.speed/1000;
+                    this.x = Math.round(this.x * 1000) / 1000;
+                } else if (this.x > this.nextX) {
+                    this.x -= this.speed/1000;
+                    this.x = Math.round(this.x * 1000) / 1000;
+                } else if (this.y < this.nextY) {
+                    this.y += this.speed/1000;
+                    this.y = Math.round(this.y * 1000) / 1000;
+                } else if (this.y > this.nextY) {
+                    this.y -= this.speed/1000;
+                    this.y = Math.round(this.y * 1000) / 1000;
+                }
+                this.updatePosition();
+            }
+        }
+
+        class Tower {
+            constructor(y, x, range, damage, fireRate) {
+                this.x = x;
+                this.y = y;
+                this.range = range;
+                this.damage = damage;
+                this.fireRate = fireRate;
+                this.element = document.createElement('div');
+                this.element.className = 'tower';
+                this.element.style.width = '50px';
+                this.element.style.height = '50px';
+                this.element.style.backgroundColor = 'blue';
+                this.element.style.border = '2px solid black';
+                this.element.style.position = 'absolute';
+                this.element.style.top = `${this.y * 50}px`;
+                this.element.style.left = `${this.x * 50}px`;
+                gameBoard.appendChild(this.element);
+                this.intervalId = setInterval(() => this.shoot(), 1000 / this.fireRate);
+            }
+
+            shoot() {
+                // Find the nearest enemy within range
+                const enemies = document.querySelectorAll('.enemy');
+                let nearestEnemy = null;
+                let minDistance = this.range;
+            
+                enemies.forEach(enemy => {
+                    const enemyX = parseFloat(enemy.style.left) / 50;
+                    const enemyY = parseFloat(enemy.style.top) / 50;
+                    const distance = Math.sqrt((enemyX - this.x) ** 2 + (enemyY - this.y) ** 2);
+            
+                    if (distance <= this.range && (nearestEnemy === null || distance < minDistance)) {
+                        nearestEnemy = enemy;
+                        minDistance = distance;
+                    }
+                });
+            
+                if (nearestEnemy) {
+                    // Reduce the health of the nearest enemy
+                    const enemyInstance = nearestEnemy.instance;
+                    enemyInstance.health -= this.damage;
+                    enemyInstance.updateHealthBar();
+                    if (enemyInstance.health <= 0) {
+                        nearestEnemy.remove();
+                        clearInterval(enemyInstance.intervalId);
+                    }
+            
+                    const enemyX = parseFloat(nearestEnemy.style.left) / 50;
+                    const enemyY = parseFloat(nearestEnemy.style.top) / 50;
+                    
+                    console.log('Enemy at', enemyX, enemyY, 'is hit');
+                    
+                    const ray = document.createElement('div');
+                    ray.className = 'ray';
+                    ray.style.position = 'absolute';
+                    ray.style.backgroundColor = 'yellow';
+                    ray.style.width = '2px';
+                    ray.style.height = `${minDistance * 50}px`;
+                    ray.style.top = `${this.y * 50 + 25}px`;
+                    ray.style.left = `${this.x * 50 + 25}px`;
+                    ray.style.transformOrigin = 'top';
+                    ray.style.transform = `rotate(${Math.atan2(enemyY - this.y, enemyX - this.x) * 180 / Math.PI + 270}deg)`;
+                    gameBoard.appendChild(ray);
+            
+                    setTimeout(() => {
+                        ray.remove();
+                    }, 1000 / this.fireRate - 50);
+                }
+            }
+        }
+
+        // Add a tower to the game board
+        const tower = new Tower(6, 6, 10, 10, 10);
+        
+
+        // const enemy = new Enemy(2, 0, 100, 10, { healthBar: true });
+        // enemy.intervalId = setInterval(() => {
+        //     enemy.move();
+
+        // }, 1);
+
+                waves = [{
+            enemies: 5,
+            health: 100,
+            speed: 10,
+            interval: 2000
+        }];
+
+        let waveIndex = 0;
+        
+        function spawnWave() {
+            const wave = waves[waveIndex];
+            for (let i = 0; i < wave.enemies; i++) {
+                let spawnLocationX = 0;
+                let spawnLocationY = 0;
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        if (grid[i][j].isStart) {
+                            spawnLocationX = j;
+                            spawnLocationY = i;
+                        }
+                    }
+                }
+                const enemy = new Enemy(spawnLocationY, spawnLocationX, wave.health, wave.speed, { healthBar: true });
+                enemy.intervalId = setInterval(() => enemy.move(), 1);
+            }
+            waveIndex++;
+            if (waveIndex < waves.length) {
+                setTimeout(spawnWave, wave.interval);
+            }
+        }
+
+        spawnWave();
+        // function gameLoop() {
+        //     setTimeout(() => {
+        //         enemy.move();
+        //     }, 10);
+        //     requestAnimationFrame(gameLoop);
+        // }
+
+        // gameLoop();
     </script>
 </body>
+
 </html>
