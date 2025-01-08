@@ -114,6 +114,7 @@
             constructor(y, x, health, speed, options) {
                 this.x = x;
                 this.y = y;
+                this.maxHealth = health;
                 this.health = health;
                 this.speed = speed;
                 this.nextX = this.x;
@@ -122,18 +123,22 @@
                 this.targetY = 0;
                 this.element = document.createElement('div');
                 this.element.className = 'enemy';
-                this.element.style.width = '50px';
-                this.element.style.height = '50px';
+                this.element.style.width = '45px';
+                this.element.style.height = '45px';
                 this.element.style.backgroundColor = 'red';
                 this.element.style.border = '2px solid black';
                 this.element.style.position = 'absolute';
                 this.element.instance = this;
+                this.element.style.borderRadius = '50%';
+                this.element.style.display = 'flex';
+                this.element.style.alignItems = 'center';
+                this.element.style.justifyContent = 'center';
                 this.updatePosition();
                 gameBoard.appendChild(this.element);
                 if (options.healthBar) {
                     this.healthBar = document.createElement('div');
                     this.healthBar.style.position = 'absolute';
-                    this.healthBar.style.width = '50px';
+                    this.healthBar.style.width = '45px';
                     this.healthBar.style.height = '5px';
                     this.healthBar.style.backgroundColor = 'green';
                     this.healthBar.style.top = '-10px';
@@ -143,7 +148,7 @@
             }
 
             updateHealthBar() {
-                this.healthBar.style.width = `${Math.max(0, Math.min(50, (this.health / 100) * 50))}px`;
+                this.healthBar.style.width = `${Math.max(0, Math.min(45, (this.health / 100) * 50))}px`;
             }
 
             updatePosition() {
@@ -259,78 +264,50 @@
         }
 
         class Tower {
-            constructor(y, x, range, damage, fireRate) {
+            constructor(y, x, range, damage, fireRate, targetingType) {
                 this.x = x;
                 this.y = y;
                 this.range = range;
                 this.damage = damage;
                 this.fireRate = fireRate;
+                this.targetingType = targetingType;
                 this.element = document.createElement('div');
                 this.element.className = 'tower';
                 this.element.style.width = '50px';
                 this.element.style.height = '50px';
-                this.element.style.backgroundColor = 'blue';
+                this.element.style.backgroundColor = 'cyan';
                 this.element.style.border = '2px solid black';
                 this.element.style.position = 'absolute';
                 this.element.style.top = `${this.y * 50}px`;
                 this.element.style.left = `${this.x * 50}px`;
+                this.element.style.borderRadius = '15%';
                 gameBoard.appendChild(this.element);
                 this.intervalId = setInterval(() => this.shoot(), 1000 / this.fireRate);
             }
 
+            
+
             shoot() {
-                // Find the nearest enemy within range
-                const enemies = document.querySelectorAll('.enemy');
-                let nearestEnemy = null;
-                let minDistance = this.range;
-            
-                enemies.forEach(enemy => {
-                    const enemyX = parseFloat(enemy.style.left) / 50;
-                    const enemyY = parseFloat(enemy.style.top) / 50;
-                    const distance = Math.sqrt((enemyX - this.x) ** 2 + (enemyY - this.y) ** 2);
-            
-                    if (distance <= this.range && (nearestEnemy === null || distance < minDistance)) {
-                        nearestEnemy = enemy;
-                        minDistance = distance;
-                    }
-                });
-            
-                if (nearestEnemy) {
-                    // Reduce the health of the nearest enemy
-                    const enemyInstance = nearestEnemy.instance;
+                const target = this.findTarget();
+                if (!target) return;
+
+                const enemyInstance = target.instance;
+                const distance = Math.sqrt(Math.pow(enemyInstance.x - this.x, 2) + Math.pow(enemyInstance.y - this.y, 2));
+
+                if (distance <= this.range) {
                     enemyInstance.health -= this.damage;
-                    enemyInstance.updateHealthBar();
                     if (enemyInstance.health <= 0) {
-                        nearestEnemy.remove();
+                        target.remove();
                         clearInterval(enemyInstance.intervalId);
+                    } else if (enemyInstance.healthBar) {
+                        enemyInstance.updateHealthBar();
                     }
-            
-                    const enemyX = parseFloat(nearestEnemy.style.left) / 50;
-                    const enemyY = parseFloat(nearestEnemy.style.top) / 50;
-                    
-                    console.log('Enemy at', enemyX, enemyY, 'is hit');
-                    
-                    const ray = document.createElement('div');
-                    ray.className = 'ray';
-                    ray.style.position = 'absolute';
-                    ray.style.backgroundColor = 'yellow';
-                    ray.style.width = '2px';
-                    ray.style.height = `${minDistance * 50}px`;
-                    ray.style.top = `${this.y * 50 + 25}px`;
-                    ray.style.left = `${this.x * 50 + 25}px`;
-                    ray.style.transformOrigin = 'top';
-                    ray.style.transform = `rotate(${Math.atan2(enemyY - this.y, enemyX - this.x) * 180 / Math.PI + 270}deg)`;
-                    gameBoard.appendChild(ray);
-            
-                    setTimeout(() => {
-                        ray.remove();
-                    }, 1000 / this.fireRate - 50);
                 }
             }
         }
 
         // Add a tower to the game board
-        const tower = new Tower(6, 6, 10, 10, 10);
+        const tower = new Tower(6, 6, 10, 10, 2, 'first');
         
 
         // const enemy = new Enemy(2, 0, 100, 10, { healthBar: true });
@@ -343,14 +320,23 @@
             enemies: 5,
             health: 100,
             speed: 10,
+            spawnInterval: 1000,
             interval: 2000
         }];
 
-        let waveIndex = 0;
-        
-        function spawnWave() {
+        function spawnWave(waveIndex) {
+            if (waveIndex >= waves.length) return;
+
             const wave = waves[waveIndex];
-            for (let i = 0; i < wave.enemies; i++) {
+            let enemiesSpawned = 0;
+
+            const spawnIntervalId = setInterval(() => {
+                if (enemiesSpawned >= wave.enemies) {
+                    clearInterval(spawnIntervalId);
+                    setTimeout(() => spawnWave(waveIndex + 1), wave.interval);
+                    return;
+                }
+
                 let spawnLocationX = 0;
                 let spawnLocationY = 0;
                 for (let i = 0; i < rows; i++) {
@@ -361,16 +347,14 @@
                         }
                     }
                 }
+
                 const enemy = new Enemy(spawnLocationY, spawnLocationX, wave.health, wave.speed, { healthBar: true });
                 enemy.intervalId = setInterval(() => enemy.move(), 1);
-            }
-            waveIndex++;
-            if (waveIndex < waves.length) {
-                setTimeout(spawnWave, wave.interval);
-            }
+                enemiesSpawned++;
+            }, wave.spawnInterval);
         }
 
-        spawnWave();
+        spawnWave(0);
         // function gameLoop() {
         //     setTimeout(() => {
         //         enemy.move();
