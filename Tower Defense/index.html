@@ -285,7 +285,23 @@
                 this.intervalId = setInterval(() => this.shoot(), 1000 / this.fireRate);
             }
 
-            
+            findTarget() {
+                let closestEnemy = null;
+                let closestDistance = Infinity;
+
+                const enemies = document.querySelectorAll('.enemy');
+                enemies.forEach(enemy => {
+                    const enemyInstance = enemy.instance;
+                    const distance = Math.sqrt(Math.pow(enemyInstance.x - this.x, 2) + Math.pow(enemyInstance.y - this.y, 2));
+
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestEnemy = enemy;
+                    }
+                });
+
+                return closestEnemy;
+            }
 
             shoot() {
                 const target = this.findTarget();
@@ -302,6 +318,20 @@
                     } else if (enemyInstance.healthBar) {
                         enemyInstance.updateHealthBar();
                     }
+                    const ray = document.createElement('div');
+                    ray.style.position = 'absolute';
+                    ray.style.backgroundColor = 'yellow';
+                    ray.style.width = '2px';
+                    ray.style.height = `${distance * 50}px`;
+                    ray.style.transformOrigin = 'top';
+                    ray.style.transform = `rotate(${Math.atan2(enemyInstance.y - this.y, enemyInstance.x - this.x) * 270 / Math.PI}deg)`;
+                    ray.style.top = `${this.y * 50 + 25}px`;
+                    ray.style.left = `${this.x * 50 + 25}px`;
+                    gameBoard.appendChild(ray);
+
+                    setTimeout(() => {
+                        ray.remove();
+                    }, 100);
                 }
             }
         }
