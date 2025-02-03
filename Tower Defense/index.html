@@ -20,10 +20,11 @@
             position: relative;
             background-color: limegreen;
             top: 40%;
-            left: 30%;
+            left: 35%;
             transform: translate(-50%, -50%);
             width: 550px;
             height: 550px;
+            z-index: 1;
         }
 
         #informationBar {
@@ -33,15 +34,72 @@
             width: 100%;
             height: 10%;
             background-color: lightgray;
+            z-index: 4;
         }
 
-        #upgradeAndTowerPlacementBar {
+        .informationBarSection {
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            display: inline-block;
+            width: 10%;
+            height: 80%;
+            align-content: center;
+            border: 1px solid black;
+            margin: 0 5px;
+            z-index: 4;
+        }
+
+        #healthBar {
+            text-align: center;
+        }
+
+        #moneyBar {
+            text-align: center;
+        }
+
+        #waveBar {
+            text-align: center;
+            left: 65%;
+        }
+
+        #leftBar {
             position: absolute;
-            top: 0;
-            right: 0;
+            bottom: 0;
+            left: 0;
             width: 15%;
+            height: 90%;
+            background-color: lightgray;
+            z-index: 4;
+        }
+
+        #upgradeContainer {
+            position: relative;
+            top: 0;
+            width: 100%;
             height: 100%;
             background-color: rgb(146, 146, 146);
+            z-index: 4;
+        }
+
+        #rightBar {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 15%;
+            height: 90%;
+            background-color: lightgray;
+            z-index: 4;
+        }
+
+        #towerPlacementBar {
+            position: relative;
+            top: 0;
+            width: 100%;
+            height: 90%;
+            overflow-y: scroll;
+            background-color: rgb(146, 146, 146);
+            z-index: 4;
         }
 
         #menuBar {
@@ -49,8 +107,9 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 15%;
+            height: 10%;
             background-color: lightgray;
+            z-index: 4;
         }
 
         #start {
@@ -63,6 +122,7 @@
             background-color: green;
             border: 1px solid black;
             border-radius: 10%;
+            z-index: 4;
         }
 
         #autoStart {
@@ -75,6 +135,7 @@
             background-color: rgb(231, 235, 47);
             border: 1px solid black;
             border-radius: 10%;
+            z-index: 4;
         }
 
         .emptyCell {
@@ -100,12 +161,19 @@
 <body>
     <div id="mainPage">
         <div id="informationBar">
+            <div id="healthBar" class="informationBarSection">Health: null</div>
+            <div id="moneyBar" class="informationBarSection">Money: null</div>
+            <div id="waveBar" class="informationBarSection">Wave: null</div>
         </div>
-        <div id="upgradeAndTowerPlacementBar">
+        <div id="rightBar">
+            <div id="towerPlacementBar"></div>
             <div id="menuBar">
                 <button id="start">Send Wave</button>
                 <button id="autoStart">Autostart</button>
             </div>
+        </div>
+        <div id="leftBar">
+            <div id="upgradeContainer"></div>
         </div>
     </div>
 
@@ -114,6 +182,7 @@
         const rows = 15;
         const cols = 15;
         const grid = [];
+        var selectedTower = null;
 
         for (let i = 0; i < rows; i++) {
             const row = [];
@@ -175,8 +244,9 @@
         }
 
         class Enemy {
-            constructor(presetStats, presetMap, options, health, speed, size) {
+            constructor(presetStats, presetMap, options, value, health, speed, size) {
                 this.element = document.createElement('div');
+                this.element.style.zIndex = 3;
                 switch (presetMap) {
                     case 'test':
                         this.x = 0;
@@ -193,8 +263,8 @@
                         this.element.style.height = `${size}px`;
                         break;
                     case 'testKillable':
-                        this.health = 100;
-                        this.maxHealth = 100;
+                        this.health = 5;
+                        this.maxHealth = 5;
                         this.speed = 5;
                         this.element.style.backgroundColor = 'white';
                         this.element.style.width = '45px';
@@ -202,15 +272,15 @@
                         break;
                     case 'testUnkillable':
                         this.health = Infinity;
-                        this.maxHealth = 100;
+                        this.maxHealth = 1;
                         this.speed = 1;
                         this.element.style.backgroundColor = 'black';
                         this.element.style.width = '45px';
                         this.element.style.height = '45px';
                         break;
                     case 'testBoss':
-                        this.health = 1000;
-                        this.maxHealth = 1000;
+                        this.health = 50;
+                        this.maxHealth = 50;
                         this.speed = 2;
                         this.element.style.backgroundColor = 'red';
                         this.element.style.width = '90px';
@@ -218,6 +288,7 @@
                         this.element.style.transform = 'translate(-25%, -25%)';
                         break;
                 }
+                this.value = value;
                 this.nextX = this.x;
                 this.nextY = this.y;
                 this.targetX = 0;
@@ -242,11 +313,11 @@
             updateHealthBorder() {
                 this.healthPercentage = this.health / this.maxHealth;
 
-                
+
                 const green = Math.min(255, Math.max(0, 255 * (this.healthPercentage * 2)));
                 const red = Math.min(255, Math.max(0, 255 * (2 - this.healthPercentage * 3)));
                 const color = `rgb(${red}, ${green}, 0)`;
-                
+
                 this.element.style.borderColor = color;
 
 
@@ -270,6 +341,11 @@
                 }
 
                 if (this.x === this.targetX && this.y === this.targetY) {
+                    health -= this.health;
+                    if (health <= 0) {
+                        health = 0;
+                    }
+                    healthContainer.innerHTML = `Health: ${health}`;
                     this.element.remove();
                     clearInterval(this.intervalId);
                 }
@@ -375,14 +451,20 @@
         }
 
         class Tower {
-            constructor(y, x, range, damage, fireRate, targetingType) {
-                this.x = x;
-                this.y = y;
-                this.range = range;
-                this.damage = damage;
-                this.fireRate = fireRate;
-                this.targetingType = targetingType;
+            constructor(presetTower, options, y, x, range, damage, fireRate, targetingType, projectileType) {
                 this.element = document.createElement('div');
+                this.element.style.zIndex = 2;
+                switch (presetTower) {
+                    case 'basic':
+                        this.x = x;
+                        this.y = y;
+                        this.range = 3;
+                        this.damage = 1;
+                        this.fireRate = 1;
+                        break;
+                }
+                this.damageCount = 0;
+                this.targetingType = 'first';
                 this.element.className = 'tower';
                 this.element.style.width = '47px';
                 this.element.style.height = '47px';
@@ -394,8 +476,12 @@
                 this.element.style.borderRadius = '15%';
                 gameBoard.appendChild(this.element);
                 this.intervalId = setInterval(() => this.shoot(), 1000 / this.fireRate);
-                onclick = () => {
-
+                this.element.onclick = () => {
+                    if (selectedTower === this) {
+                        selectedTower = null;
+                    } else {
+                        selectedTower = this;
+                    }
                 };
             }
 
@@ -463,8 +549,14 @@
                 const distance = Math.sqrt(Math.pow(enemyInstance.x - this.x, 2) + Math.pow(enemyInstance.y - this.y, 2));
 
                 if (distance <= this.range) {
+                    if (enemyInstance.health <= this.damage) {
+                        this.damageCount += enemyInstance.health;
+                    } else {
+                        this.damageCount += this.damage;
+                    }
                     enemyInstance.health -= this.damage;
                     if (enemyInstance.health <= 0) {
+                        money += enemyInstance.value;
                         target.element.remove();
                         clearInterval(enemyInstance.intervalId);
                     }
@@ -489,15 +581,57 @@
             }
         }
 
-        // Add a tower to the game board
-        const tower = new Tower(6, 6, Infinity, 1000, 1, 'first');
+        // class Projectile {
+        //     constructor(x, y, targetX, targetY, speed, damage, size, lifetime, options) {
+        //         this.x = x;
+        //         this.y = y;
+        //         this.targetX = targetX;
+        //         this.targetY = targetY;
+        //         this.lifetime = lifetime;
+        //         this.speed = speed;
+        //         this.damage = damage;
+        //         this.element = document.createElement('div');
+        //         this.element.className = 'projectile';
+        //         this.element.style.width = `${size}px`;
+        //         this.element.style.height = `${size}px`;
+        //         this.element.style.backgroundColor = 'yellow';
+        //         this.element.style.position = 'absolute';
+        //         this.element.style.top = `${this.y * spacing}px`;
+        //         this.element.style.left = `${this.x * spacing}px`;
+        //         this.element.style.borderRadius = '50%';
+        //         gameBoard.appendChild(this.element);
+        //         this.intervalId = setInterval(() => this.move(), 1000 / 60);
+        //     }
 
+        //     move() {
+        //         if (this.lifetime <= 0) {
+        //             this.element.remove();
+        //             clearInterval(this.intervalId);
+        //         }
 
-        // const enemy = new Enemy('testKillable', 'test', { healthBorder: true }, 100, 10, 45);
-        // enemy.intervalId = setInterval(() => {
-        //     enemy.move();
+        //         if (this.x < this.targetX) {
+        //             this.x += this.speed / 1000;
+        //             this.x = Math.round(this.x * 1000) / 1000;
+        //             this.lifetime -= this.speed / 1000;
+        //         } else if (this.x > this.targetX) {
+        //             this.x -= this.speed / 1000;
+        //             this.x = Math.round(this.x * 1000) / 1000;
+        //             this.lifetime -= this.speed / 1000;
+        //         } else if (this.y < this.targetY) {
+        //             this.y += this.speed / 1000;
+        //             this.y = Math.round(this.y * 1000) / 1000;
+        //             this.lifetime -= this.speed / 1000;
+        //         } else if (this.y > this.targetY) {
+        //             this.y -= this.speed / 1000;
+        //             this.y = Math.round(this.y * 1000) / 1000;
+        //             this.lifetime -= this.speed / 1000;
+        //         }
+        //         this.element.style.top = `${this.y * spacing}px`;
+        //         this.element.style.left = `${this.x * spacing}px`;
+        //     }
+        // }
 
-        // }, 1);
+        const tower = new Tower('basic', {}, 6, 6);
 
         waves = [
             [{ enemyType: 'testKillable', amount: 1, spawnInterval: 100, timeout: 0 },
@@ -537,9 +671,26 @@
             }, wave.spawnInterval);
         }
 
+        var towerList = [];
+        var waveMax = waves.length;
         var waveNumber = 0;
+        var health = 100;
+        var money = 0;
+        var healthContainer = document.getElementById('healthBar');
+        var moneyContainer = document.getElementById('moneyBar');
+        var waveContainer = document.getElementById('waveBar');
         var startButton = document.getElementById('start');
         var autoStartButton = document.getElementById('autoStart');
+        var towerMenu = document.getElementById('towerPlacementBar');
+        var upgradeContainer = document.getElementById('upgradeContainer');
+
+        waveContainer.innerHTML = `Wave: ${waveNumber}/${waveMax}`;
+        healthContainer.innerHTML = `Health: ${health}`;
+        moneyContainer.innerHTML = `Money: ${money}`;
+
+        autoStartButton.autoStart = false;
+
+
 
         autoStartButton.onclick = () => {
             if (autoStartButton.autoStart) {
@@ -555,16 +706,58 @@
             startButton.onclick = () => {
                 spawnWave(waveNumber);
                 waveNumber++;
+                waveContainer.innerHTML = `Wave: ${waveNumber}/${waveMax}`;
             };
         }
-        // function gameLoop() {
-        //     setTimeout(() => {
-        //         enemy.move();
-        //     }, 10);
-        //     requestAnimationFrame(gameLoop);
-        // }
 
-        // gameLoop();
+        setInterval(() => {
+            if (selectedTower != null) {
+                upgradeContainer.style.alignContent = 'center';
+                upgradeContainer.style.textAlign = 'center';
+                upgradeContainer.innerHTML = `
+                Selected Tower: ${selectedTower.name} <br> 
+                Damage: ${selectedTower.damage} <br> 
+                Range: ${selectedTower.range} <br> 
+                Fire Rate: ${selectedTower.fireRate} <br> 
+                Targeting: ${selectedTower.targetingType} <br> 
+                Damage Count: ${selectedTower.damageCount}`;
+                let upgradeRangeButton = document.createElement('button');
+                let upgradeDamageButton = document.createElement('button');
+                let upgradeFireRateButton = document.createElement('button');
+                upgradeRangeButton.innerHTML = `Upgrade Range <br> Cost: ${selectedTower.range * 10}`;
+                upgradeDamageButton.innerHTML = 'Upgrade Damage';
+                upgradeFireRateButton.innerHTML = 'Upgrade Fire Rate';
+                upgradeRangeButton.onclick = () => {
+                    if (money >= selectedTower.range * 10) {
+                        money -= selectedTower.range * 10;
+                        selectedTower.range++;
+                        moneyContainer.innerHTML = `Money: ${money}`;
+                    }
+                };
+                upgradeDamageButton.onclick = () => {
+                    if (money >= selectedTower.damage * 10) {
+                        money -= selectedTower.damage * 10;
+                        selectedTower.damage++;
+                        moneyContainer.innerHTML = `Money: ${money}`;
+                    }
+                };
+                upgradeFireRateButton.onclick = () => {
+                    if (money >= selectedTower.fireRate * 10) {
+                        money -= selectedTower.fireRate * 10;
+                        selectedTower.fireRate++;
+                        moneyContainer.innerHTML = `Money: ${money}`;
+                    }
+                };
+                upgradeContainer.appendChild(upgradeRangeButton);
+                upgradeContainer.appendChild(upgradeDamageButton);
+                upgradeContainer.appendChild(upgradeFireRateButton);
+
+            } else {
+                upgradeContainer.innerHTML = 'No Tower Selected';
+                upgradeContainer.style.alignContent = 'center';
+                upgradeContainer.style.textAlign = 'center';
+            }
+        }, 1);
     </script>
 </body>
 
