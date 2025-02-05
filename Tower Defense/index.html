@@ -14,16 +14,17 @@
             width: 100%;
             height: 100%;
             background-color: lightblue;
+            overflow-x: hidden;
+            overflow-y: hidden;
         }
 
         #gameBoard {
-            position: relative;
-            background-color: limegreen;
-            top: 40%;
-            left: 35%;
-            transform: translate(-50%, -50%);
-            width: 550px;
-            height: 550px;
+            position: absolute;
+            background-color: black;
+            top: 10vh;
+            left: 15vw;
+            width: 70vw;
+            height: 90vh;
             z-index: 1;
         }
 
@@ -31,10 +32,10 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 10%;
+            width: 100vw;
+            height: 10vh;
             background-color: lightgray;
-            z-index: 4;
+            z-index: 5;
         }
 
         .informationBarSection {
@@ -47,7 +48,7 @@
             align-content: center;
             border: 1px solid black;
             margin: 0 5px;
-            z-index: 4;
+            z-index: 5;
         }
 
         #healthBar {
@@ -67,10 +68,10 @@
             position: absolute;
             bottom: 0;
             left: 0;
-            width: 15%;
-            height: 90%;
+            width: 15vw;
+            height: 90vh;
             background-color: lightgray;
-            z-index: 4;
+            z-index: 5;
         }
 
         #upgradeContainer {
@@ -79,27 +80,26 @@
             width: 100%;
             height: 100%;
             background-color: rgb(146, 146, 146);
-            z-index: 4;
+            z-index: 5;
         }
 
         #rightBar {
             position: absolute;
             bottom: 0;
             right: 0;
-            width: 15%;
-            height: 90%;
+            width: 15vw;
+            height: 90vh;
             background-color: lightgray;
-            z-index: 4;
+            z-index: 5;
         }
 
         #towerPlacementBar {
             position: relative;
             top: 0;
-            width: 100%;
-            height: 90%;
-            overflow-y: scroll;
+            width: 100vw;
+            height: 90vh;
             background-color: rgb(146, 146, 146);
-            z-index: 4;
+            z-index: 5;
         }
 
         #menuBar {
@@ -107,53 +107,33 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 10%;
+            height: 10vh;
             background-color: lightgray;
-            z-index: 4;
+            z-index: 5;
         }
 
         #start {
-            position: relative;
-            top: 50%;
-            left: 50%;
-            transform: translate(-110%, -50%);
+            position: absolute;
+            top: 10%;
+            left: 7.5%;
             width: 40%;
             height: 80%;
             background-color: green;
             border: 1px solid black;
             border-radius: 10%;
-            z-index: 4;
+            z-index: 5;
         }
 
         #autoStart {
-            position: relative;
-            top: 50%;
-            left: 50%;
-            transform: translate(-90%, -50%);
+            position: absolute;
+            top: 10%;
+            left: 52.5%;
             width: 40%;
             height: 80%;
             background-color: rgb(231, 235, 47);
             border: 1px solid black;
             border-radius: 10%;
-            z-index: 4;
-        }
-
-        .emptyCell {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            display: inline-block;
-            background-color: lightgreen;
-            border: 1px solid black;
-        }
-
-        .pathCell {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            display: inline-block;
-            background-color: burlywood;
-            border: 1px solid burlywood;
+            z-index: 5;
         }
     </style>
 </head>
@@ -178,11 +158,12 @@
     </div>
 
     <script>
-        const spacing = 52
-        const rows = 15;
-        const cols = 15;
+        const spacing = 50;
+        const rows = 20;
+        const cols = 32;
         const grid = [];
         var selectedTower = null;
+        var enemies = [];
 
         for (let i = 0; i < rows; i++) {
             const row = [];
@@ -193,234 +174,173 @@
         }
 
         grid[2][0].isStart = true;
-        grid[2][0].hasPath = true;
-        grid[2][1].hasPath = true;
-        grid[2][2].hasPath = true;
-        grid[2][3].hasPath = true;
-        grid[2][4].hasPath = true;
-        grid[2][5].hasPath = true;
-        grid[2][6].hasPath = true;
-        grid[2][7].hasPath = true;
-        grid[2][8].hasPath = true;
+        grid[18][31].isEnd = true;
 
-        grid[3][8].hasPath = true;
-        grid[4][8].hasPath = true;
-        grid[5][8].hasPath = true;
-        grid[5][7].hasPath = true;
-        grid[5][6].hasPath = true;
-        grid[5][5].hasPath = true;
-        grid[5][4].hasPath = true;
-        grid[5][3].hasPath = true;
-        grid[5][2].hasPath = true;
-        grid[6][2].hasPath = true;
-        grid[7][2].hasPath = true;
-        grid[8][2].hasPath = true;
-        grid[8][3].hasPath = true;
-        grid[8][4].hasPath = true;
-        grid[8][5].hasPath = true;
-        grid[8][6].hasPath = true;
-        grid[8][7].hasPath = true;
-        grid[8][8].hasPath = true;
-        grid[8][9].hasPath = true;
-        grid[8][10].hasPath = true;
-        grid[8][10].isEnd = true;
+        const pathPoint = [{y:2,x:0},{y:2,x:8},{y:12,x:8},{y:12,x:16},{y:2,x:16},{y:2,x:24},{y:18,x:24},{y:18,x:31}];
+        
+        for (let i = 0; i < pathPoint.length - 1; i++) {
+            const start = pathPoint[i];
+            const end = pathPoint[i + 1];
+            const xDiff = end.x - start.x;
+            const yDiff = end.y - start.y;
+            const xDirection = xDiff > 0 ? 1 : -1;
+            const yDirection = yDiff > 0 ? 1 : -1;
 
-        const gameBoard = document.createElement('div');
-        gameBoard.id = 'gameBoard';
-        document.getElementById('mainPage').appendChild(gameBoard);
-
-        for (let i = 0; i < rows; i++) {
-            for (let j = 0; j < cols; j++) {
-                const cell = document.createElement('div');
-                cell.style.top = `${i * spacing}px`;
-                cell.style.left = `${j * spacing}px`;
-                if (grid[i][j].hasPath) {
-                    cell.className = 'pathCell';
-                } else {
-                    cell.className = 'emptyCell';
-                }
-                gameBoard.appendChild(cell);
+            if (xDiff !== 0) {
+            for (let j = 0; j <= Math.abs(xDiff); j++) {
+                
+                grid[start.y][start.x + j * xDirection].hasPath = true;
+            }
+            } else {
+            for (let j = 0; j <= Math.abs(yDiff); j++) {
+                grid[start.y + j * yDirection][start.x].hasPath = true;
+            }
             }
         }
 
+        const gameBoard = document.createElement('canvas');
+        gameBoard.id = 'gameBoard';
+        gameBoard.width = cols * spacing;
+        gameBoard.height = rows * spacing;
+        document.getElementById('mainPage').appendChild(gameBoard);
+
+        const ctx = gameBoard.getContext('2d');
+
+        function drawGrid() {
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (grid[i][j].hasPath) {
+                        ctx.fillStyle = 'burlywood';
+                    } else {
+                        ctx.fillStyle = 'lightgreen';
+                    }
+                    ctx.fillRect(j * spacing, i * spacing, spacing, spacing);
+                    ctx.strokeStyle = 'black';
+                    ctx.strokeRect(j * spacing, i * spacing, spacing, spacing);
+                }
+            }
+        }
+
+        drawGrid();
+
         class Enemy {
             constructor(presetStats, presetMap, options, value, health, speed, size) {
-                this.element = document.createElement('div');
-                this.element.style.zIndex = 3;
-                switch (presetMap) {
-                    case 'test':
-                        this.x = 0;
-                        this.y = 2;
-                        break;
-                }
+                this.x = 0;
+                this.y = 2;
                 switch (presetStats) {
                     case 'custom':
                         this.health = health;
                         this.maxHealth = health;
                         this.speed = speed;
-                        this.element.style.backgroundColor = options.color || 'gray';
-                        this.element.style.width = `${size}px`;
-                        this.element.style.height = `${size}px`;
+                        this.value = value;
+                        this.color = options.color || 'gray';
+                        this.size = size;
                         break;
-                    case 'testKillable':
-                        this.health = 5;
-                        this.maxHealth = 5;
-                        this.speed = 5;
-                        this.element.style.backgroundColor = 'white';
-                        this.element.style.width = '45px';
-                        this.element.style.height = '45px';
+                    case 'normal':
+                        this.health = 10;
+                        this.maxHealth = 10;
+                        this.speed = 20;
+                        this.color = 'white';
+                        this.size = 45;
                         break;
-                    case 'testUnkillable':
+                    case 'unkillable':
                         this.health = Infinity;
                         this.maxHealth = 1;
                         this.speed = 1;
-                        this.element.style.backgroundColor = 'black';
-                        this.element.style.width = '45px';
-                        this.element.style.height = '45px';
+                        this.color = 'black';
+                        this.size = 45;
                         break;
-                    case 'testBoss':
-                        this.health = 50;
-                        this.maxHealth = 50;
-                        this.speed = 2;
-                        this.element.style.backgroundColor = 'red';
-                        this.element.style.width = '90px';
-                        this.element.style.height = '90px';
-                        this.element.style.transform = 'translate(-25%, -25%)';
+                    case 'boss':
+                        this.health = 100;
+                        this.maxHealth = 100;
+                        this.speed = 5;
+                        this.color = 'red';
+                        this.size = 55;
+                        break;
+                    case 'fast':
+                        this.health = 5;
+                        this.maxHealth = 5;
+                        this.speed = 30;
+                        this.color = 'dodgerblue';
+                        this.size = 45;
+                        break;
+                    case 'slow':
+                        this.health = 20;
+                        this.maxHealth = 20;
+                        this.speed = 15;
+                        this.color = 'green';
+                        this.size = 45;
+                        break;
+                    case 'tank':
+                        this.health = 40;
+                        this.maxHealth = 40;
+                        this.speed = 10;
+                        this.color = 'darkgreen';
+                        this.size = 45;
+                        break;
+                    case 'quick':
+                        this.health = 5;
+                        this.maxHealth = 5;
+                        this.speed = 40;
+                        this.color = 'blue';
+                        this.size = 45;
+                        break;
+                    case 'abnormal':
+                        this.health = 20;
+                        this.maxHealth = 20;
+                        this.speed = 25;
+                        this.color = 'lightgray';
+                        this.size = 45;
+                        break;
+                    case 'heavyboss':
+                        this.health = 1000;
+                        this.maxHealth = 1000;
+                        this.speed = 3;
+                        this.color = 'darkred';
+                        this.size = 65;
                         break;
                 }
-                this.value = value;
+                if (!this.value) {
+                    this.value = this.health;
+                }
                 this.nextX = this.x;
                 this.nextY = this.y;
                 this.targetX = 0;
                 this.targetY = 0;
                 this.distanceFromStart = 0;
-                this.element.className = 'enemy';
-                this.element.style.border = '2px solid black';
-                this.element.style.position = 'absolute';
-                this.element.instance = this;
-                this.element.style.borderRadius = '50%';
-                this.element.style.display = 'flex';
-                this.element.style.alignItems = 'center';
-                this.element.style.justifyContent = 'center';
+                this.healthBorder = options.healthBorder || false;
+                enemies.push(this);
                 this.updatePosition();
-                gameBoard.appendChild(this.element);
-                if (options.healthBorder) {
-                    this.healthBorder = true;
-                    this.updateHealthBorder();
-                }
             }
 
             updateHealthBorder() {
                 this.healthPercentage = this.health / this.maxHealth;
-
-
                 const green = Math.min(255, Math.max(0, 255 * (this.healthPercentage * 2)));
                 const red = Math.min(255, Math.max(0, 255 * (2 - this.healthPercentage * 3)));
-                const color = `rgb(${red}, ${green}, 0)`;
-
-                this.element.style.borderColor = color;
-
-
+                this.borderColor = `rgb(${red}, ${green}, 0)`;
             }
 
             updatePosition() {
-                this.element.style.top = `${this.y * spacing}px`;
-                this.element.style.left = `${this.x * spacing}px`;
 
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x * spacing + spacing / 2, this.y * spacing + spacing / 2, this.size / 2, 0, 2 * Math.PI);
+                ctx.fill();
+                if (this.healthBorder) {
+                    this.updateHealthBorder();
+                    ctx.strokeStyle = this.borderColor;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
             }
 
             move() {
-
-                for (let i = 0; i < rows; i++) {
-                    for (let j = 0; j < cols; j++) {
-                        if (grid[i][j].isEnd) {
-                            this.targetX = j;
-                            this.targetY = i;
-                        }
-                    }
-                }
-
-                if (this.x === this.targetX && this.y === this.targetY) {
-                    health -= this.health;
-                    if (health <= 0) {
-                        health = 0;
-                    }
-                    healthContainer.innerHTML = `Health: ${health}`;
-                    this.element.remove();
-                    clearInterval(this.intervalId);
-                }
-
-                if (this.x === this.nextX && this.y === this.nextY) {
-                    const openSet = [];
-                    const closedSet = [];
-                    const startNode = { x: this.x, y: this.y, g: 0, h: 0, f: 0, parent: null };
-                    const endNode = { x: this.targetX, y: this.targetY, g: 0, h: 0, f: 0, parent: null };
-                    openSet.push(startNode);
-
-                    const heuristic = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-
-                    while (openSet.length > 0) {
-                        let lowestIndex = 0;
-                        for (let i = 0; i < openSet.length; i++) {
-                            if (openSet[i].f < openSet[lowestIndex].f) {
-                                lowestIndex = i;
-                            }
-                        }
-
-                        const currentNode = openSet[lowestIndex];
-
-                        if (currentNode.x === endNode.x && currentNode.y === endNode.y) {
-                            let temp = currentNode;
-                            while (temp.parent) {
-                                this.nextX = temp.x;
-                                this.nextY = temp.y;
-                                temp = temp.parent;
-                            }
-                            break;
-                        }
-
-                        openSet.splice(lowestIndex, 1);
-                        closedSet.push(currentNode);
-
-                        const neighbors = [
-                            { x: currentNode.x + 1, y: currentNode.y },
-                            { x: currentNode.x - 1, y: currentNode.y },
-                            { x: currentNode.x, y: currentNode.y + 1 },
-                            { x: currentNode.x, y: currentNode.y - 1 }
-                        ];
-
-                        for (const neighbor of neighbors) {
-                            if (neighbor.x < 0 || neighbor.x >= cols || neighbor.y < 0 || neighbor.y >= rows) {
-                                continue;
-                            }
-
-                            if (!grid[neighbor.y][neighbor.x].hasPath) {
-                                continue;
-                            }
-
-                            if (closedSet.find(node => node.x === neighbor.x && node.y === neighbor.y)) {
-                                continue;
-                            }
-
-                            const gScore = currentNode.g + 1;
-                            let gScoreIsBest = false;
-
-
-                            let neighborNode = openSet.find(node => node.x === neighbor.x && node.y === neighbor.y);
-                            if (!neighborNode) {
-                                neighborNode = { ...neighbor, g: gScore, h: heuristic(neighbor, endNode), f: gScore + heuristic(neighbor, endNode), parent: currentNode };
-                                openSet.push(neighborNode);
-                                gScoreIsBest = true;
-                            } else if (gScore < neighborNode.g) {
-                                neighborNode.g = gScore;
-                                gScoreIsBest = true;
-                            }
-
-                            if (gScoreIsBest) {
-                                neighborNode.parent = currentNode;
-                                neighborNode.f = neighborNode.g + neighborNode.h;
-                            }
-                        }
+                const currentPoint = pathPoint.find(point => point.x === this.x && point.y === this.y);
+                if (currentPoint) {
+                    const currentIndex = pathPoint.indexOf(currentPoint);
+                    if (currentIndex < pathPoint.length - 1) {
+                        this.nextX = pathPoint[currentIndex + 1].x;
+                        this.nextY = pathPoint[currentIndex + 1].y;
                     }
                 }
 
@@ -428,21 +348,33 @@
                 if (this.x < this.nextX) {
                     this.x += this.speed / 1000;
                     this.x = Math.round(this.x * 1000) / 1000;
+                    if (this.x > this.nextX) {
+                        this.x = this.nextX;
+                    }
                     this.distanceFromStart += this.speed / 1000;
                     this.distanceFromStart = Math.round(this.distanceFromStart * 1000) / 1000;
                 } else if (this.x > this.nextX) {
                     this.x -= this.speed / 1000;
                     this.x = Math.round(this.x * 1000) / 1000;
+                    if (this.x < this.nextX) {
+                        this.x = this.nextX;
+                    }
                     this.distanceFromStart += this.speed / 1000;
                     this.distanceFromStart = Math.round(this.distanceFromStart * 1000) / 1000;
                 } else if (this.y < this.nextY) {
                     this.y += this.speed / 1000;
                     this.y = Math.round(this.y * 1000) / 1000;
+                    if (this.y > this.nextY) {
+                        this.y = this.nextY;
+                    }
                     this.distanceFromStart += this.speed / 1000;
                     this.distanceFromStart = Math.round(this.distanceFromStart * 1000) / 1000;
                 } else if (this.y > this.nextY) {
                     this.y -= this.speed / 1000;
                     this.y = Math.round(this.y * 1000) / 1000;
+                    if (this.y < this.nextY) {
+                        this.y = this.nextY;
+                    }
                     this.distanceFromStart += this.speed / 1000;
                     this.distanceFromStart = Math.round(this.distanceFromStart * 1000) / 1000;
                 }
@@ -452,37 +384,97 @@
 
         class Tower {
             constructor(presetTower, options, y, x, range, damage, fireRate, targetingType, projectileType) {
-                this.element = document.createElement('div');
-                this.element.style.zIndex = 2;
+                this.x = x;
+                this.y = y;
                 switch (presetTower) {
                     case 'basic':
-                        this.x = x;
-                        this.y = y;
                         this.range = 3;
                         this.damage = 1;
-                        this.fireRate = 1;
+                        this.fireRate = 3;
+                        this.name = 'Basic';
                         break;
                 }
                 this.damageCount = 0;
                 this.targetingType = 'first';
-                this.element.className = 'tower';
-                this.element.style.width = '47px';
-                this.element.style.height = '47px';
-                this.element.style.backgroundColor = 'cyan';
-                this.element.style.border = '2px solid black';
-                this.element.style.position = 'absolute';
-                this.element.style.top = `${this.y * spacing}px`;
-                this.element.style.left = `${this.x * spacing}px`;
-                this.element.style.borderRadius = '15%';
-                gameBoard.appendChild(this.element);
                 this.intervalId = setInterval(() => this.shoot(), 1000 / this.fireRate);
-                this.element.onclick = () => {
-                    if (selectedTower === this) {
-                        selectedTower = null;
-                    } else {
-                        selectedTower = this;
+                gameBoard.addEventListener('click', (event) => {
+                    
+                    const rect = gameBoard.getBoundingClientRect();
+                    const x = Math.round((event.clientX - rect.left + window.scrollX) / spacing);
+                    const y = Math.round((event.clientY - rect.top + window.scrollY) / spacing);
+                    
+
+                    if (this.x-1 === x && this.y-1 === y) {
+                        if (selectedTower === this) {
+                            selectedTower = null;
+                            upgradeContainer.innerHTML = '';
+                        } else {
+                            selectedTower = this;
+                            upgradeContainer.innerHTML = `
+                                <p>Selected Tower: ${this.name}</p>
+                                <p>Range: ${Math.round(this.range * 10) / 10}</p>
+                                <p>Damage: ${this.damage}</p>
+                                <p>Fire Rate: ${this.fireRate}</p>
+                                <p>Damage Count: ${this.damageCount}</p>
+                            `;
+                            let upgradeRangeButton = document.createElement('button');
+                            let upgradeDamageButton = document.createElement('button');
+                            let upgradeFireRateButton = document.createElement('button');
+                            upgradeRangeButton.innerHTML = `Increase Range <br> Cost: ${Math.round(this.range)}`;
+                            upgradeDamageButton.innerHTML = `Increase Damage <br> Cost: ${this.damage * 10}`;
+                            upgradeFireRateButton.innerHTML = `Increase Fire Rate <br> Cost: ${this.fireRate * 10}`;
+                            upgradeRangeButton.onclick = () => {
+                                if (money >= Math.round(this.range)) {
+                                    money -= Math.round(this.range);
+                                    moneyContainer.innerHTML = `Money: ${money}`;
+                                    this.range++;
+                                    upgradeRangeButton.innerHTML = `Increase Range <br> Cost: ${Math.round(this.range)}`;
+                                }
+                            };
+                            upgradeDamageButton.onclick = () => {
+                                if (money >= this.damage * 10) {
+                                    money -= this.damage * 10;
+                                    moneyContainer.innerHTML = `Money: ${money}`;
+                                    this.damage++;
+                                    upgradeDamageButton.innerHTML = `Increase Damage <br> Cost: ${this.damage * 10}`;
+                                }
+                            };
+                            upgradeFireRateButton.onclick = () => {
+                                if (money >= this.fireRate * 10) {
+                                    money -= this.fireRate * 10;
+                                    moneyContainer.innerHTML = `Money: ${money}`;
+                                    this.fireRate++;
+                                    upgradeFireRateButton.innerHTML = `Increase Fire Rate <br> Cost: ${this.fireRate * 10}`;
+                                    clearInterval(this.intervalId);
+                                    this.intervalId = setInterval(() => this.shoot(), 1000 / this.fireRate);
+                                }
+                            };
+                            let upgradeTargetingButton = document.createElement('button');
+                            upgradeTargetingButton.innerHTML = `Target: ${this.targetingType}`;
+                            upgradeTargetingButton.onclick = () => {
+                                const targetingTypes = ['first', 'last', 'strong', 'weak', 'close', 'far'];
+                                const currentIndex = targetingTypes.indexOf(this.targetingType);
+                                this.targetingType = targetingTypes[(currentIndex + 1) % targetingTypes.length];
+                                upgradeTargetingButton.innerHTML = `Target: ${this.targetingType}`;
+                            };
+                            upgradeContainer.appendChild(upgradeTargetingButton);
+                            upgradeContainer.appendChild(document.createElement('br'));
+                            upgradeContainer.appendChild(upgradeRangeButton);
+                            upgradeContainer.appendChild(document.createElement('br'));
+                            upgradeContainer.appendChild(upgradeDamageButton);
+                            upgradeContainer.appendChild(document.createElement('br'));
+                            upgradeContainer.appendChild(upgradeFireRateButton);
+                        }
                     }
-                };
+                });
+                this.draw();
+            }
+
+            draw() {
+                ctx.fillStyle = 'cyan';
+                ctx.fillRect(this.x * spacing, this.y * spacing, spacing, spacing);
+                ctx.strokeStyle = 'black';
+                ctx.strokeRect(this.x * spacing, this.y * spacing, spacing, spacing);
             }
 
             findTarget() {
@@ -490,49 +482,51 @@
                 let enemyFarthestFromStart = 0;
                 let enemyHighestHealth = 0;
                 let closestDistance = Infinity;
-
-                const enemies = document.querySelectorAll('.enemy');
                 enemies.forEach(enemy => {
-                    const enemyInstance = enemy.instance;
-                    const distance = Math.sqrt(Math.pow(enemyInstance.x - this.x, 2) + Math.pow(enemyInstance.y - this.y, 2));
-                    const distanceFromStart = enemyInstance.distanceFromStart;
-                    const maxHealth = enemyInstance.maxHealth;
 
+                    const distance = Math.sqrt(Math.pow(enemy.x - this.x, 2) + Math.pow(enemy.y - this.y, 2));
+                    const distanceFromStart = enemy.distanceFromStart;
+                    const maxHealth = enemy.maxHealth;
+
+
+                    console.log(this.targetingType);
+                    
                     switch (this.targetingType) {
+                        
                         case 'first':
-                            if (distanceFromStart > enemyFarthestFromStart) {
+                            if (distance <= this.range && distanceFromStart > enemyFarthestFromStart) {
                                 enemyFarthestFromStart = distanceFromStart;
-                                targetEnemy = enemyInstance;
+                                targetEnemy = enemy;
                             }
                             break;
                         case 'last':
-                            if (distanceFromStart < enemyFarthestFromStart) {
+                            if (distance <= this.range && distanceFromStart < enemyFarthestFromStart) {
                                 enemyFarthestFromStart = distanceFromStart;
-                                targetEnemy = enemyInstance;
+                                targetEnemy = enemy;
                             }
                             break;
                         case 'strong':
                             if (maxHealth > enemyHighestHealth) {
                                 enemyHighestHealth = maxHealth;
-                                targetEnemy = enemyInstance;
+                                targetEnemy = enemy;
                             }
                             break;
                         case 'weak':
                             if (maxHealth < enemyHighestHealth) {
                                 enemyHighestHealth = maxHealth;
-                                targetEnemy = enemyInstance;
+                                targetEnemy = enemy;
                             }
                             break;
                         case 'close':
                             if (distance < closestDistance) {
                                 closestDistance = distance;
-                                targetEnemy = enemyInstance;
+                                targetEnemy = enemy;
                             }
                             break;
                         case 'far':
                             if (distance > closestDistance) {
                                 closestDistance = distance;
-                                targetEnemy = enemyInstance;
+                                targetEnemy = enemy;
                             }
                             break;
                     }
@@ -543,6 +537,7 @@
 
             shoot() {
                 const target = this.findTarget();
+                
                 if (!target) return;
 
                 const enemyInstance = target;
@@ -557,88 +552,44 @@
                     enemyInstance.health -= this.damage;
                     if (enemyInstance.health <= 0) {
                         money += enemyInstance.value;
-                        target.element.remove();
-                        clearInterval(enemyInstance.intervalId);
+                        moneyContainer.innerHTML = `Money: ${money}`;
+
+                        const index = enemies.indexOf(enemyInstance);
+                        if (index > -1) {
+                            enemies.splice(index, 1);
+                        }
                     }
                     if (enemyInstance.healthBorder) {
                         enemyInstance.updateHealthBorder();
                     }
-                    const ray = document.createElement('div');
-                    ray.style.position = 'absolute';
-                    ray.style.backgroundColor = 'yellow';
-                    ray.style.width = '2px';
-                    ray.style.height = `${distance * spacing}px`;
-                    ray.style.transformOrigin = 'top';
-                    ray.style.transform = `rotate(${Math.atan2(enemyInstance.y - this.y, enemyInstance.x - this.x) * 180 / Math.PI - 90}deg)`;
-                    ray.style.top = `${this.y * spacing + (spacing / 2)}px`;
-                    ray.style.left = `${this.x * spacing + (spacing / 2)}px`;
-                    gameBoard.appendChild(ray);
 
-                    setTimeout(() => {
-                        ray.remove();
-                    }, Math.min(100, 500 / this.fireRate));
+                    ctx.strokeStyle = 'yellow';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x * spacing + spacing / 2, this.y * spacing + spacing / 2);
+                    ctx.lineTo(enemyInstance.x * spacing + spacing / 2, enemyInstance.y * spacing + spacing / 2);
+                    ctx.stroke();
                 }
             }
         }
 
-        // class Projectile {
-        //     constructor(x, y, targetX, targetY, speed, damage, size, lifetime, options) {
-        //         this.x = x;
-        //         this.y = y;
-        //         this.targetX = targetX;
-        //         this.targetY = targetY;
-        //         this.lifetime = lifetime;
-        //         this.speed = speed;
-        //         this.damage = damage;
-        //         this.element = document.createElement('div');
-        //         this.element.className = 'projectile';
-        //         this.element.style.width = `${size}px`;
-        //         this.element.style.height = `${size}px`;
-        //         this.element.style.backgroundColor = 'yellow';
-        //         this.element.style.position = 'absolute';
-        //         this.element.style.top = `${this.y * spacing}px`;
-        //         this.element.style.left = `${this.x * spacing}px`;
-        //         this.element.style.borderRadius = '50%';
-        //         gameBoard.appendChild(this.element);
-        //         this.intervalId = setInterval(() => this.move(), 1000 / 60);
-        //     }
+        var towers = [];
+        let tower = new Tower('basic', {}, 10, 10);
+        towers.push(tower);
 
-        //     move() {
-        //         if (this.lifetime <= 0) {
-        //             this.element.remove();
-        //             clearInterval(this.intervalId);
-        //         }
-
-        //         if (this.x < this.targetX) {
-        //             this.x += this.speed / 1000;
-        //             this.x = Math.round(this.x * 1000) / 1000;
-        //             this.lifetime -= this.speed / 1000;
-        //         } else if (this.x > this.targetX) {
-        //             this.x -= this.speed / 1000;
-        //             this.x = Math.round(this.x * 1000) / 1000;
-        //             this.lifetime -= this.speed / 1000;
-        //         } else if (this.y < this.targetY) {
-        //             this.y += this.speed / 1000;
-        //             this.y = Math.round(this.y * 1000) / 1000;
-        //             this.lifetime -= this.speed / 1000;
-        //         } else if (this.y > this.targetY) {
-        //             this.y -= this.speed / 1000;
-        //             this.y = Math.round(this.y * 1000) / 1000;
-        //             this.lifetime -= this.speed / 1000;
-        //         }
-        //         this.element.style.top = `${this.y * spacing}px`;
-        //         this.element.style.left = `${this.x * spacing}px`;
-        //     }
-        // }
-
-        const tower = new Tower('basic', {}, 6, 6);
+        // use the format of { enemyType: '<enemy name>', amount: #, spawnInterval: #, wait: # } inside of a list inside the waves list to make a section of a wave
 
         waves = [
-            [{ enemyType: 'testKillable', amount: 1, spawnInterval: 100, timeout: 0 },
-            { enemyType: 'testKillable', amount: 3, spawnInterval: 100, timeout: 2000 },
-            { enemyType: 'testKillable', amount: 5, spawnInterval: 100, timeout: 5000 },
-            { enemyType: 'testBoss', amount: 100, spawnInterval: 100, timeout: 10000 },],
-            [{ enemyType: 'testUnkillable', amount: 1, spawnInterval: 100, timeout: 0 }]
+            [{ enemyType: 'normal', amount: 3, spawnInterval: 1000, wait: 0 }],
+            [{ enemyType: 'normal', amount: 5, spawnInterval: 750, wait: 0 }],
+            [{ enemyType: 'normal', amount: 5, spawnInterval: 750, wait: 0 }, { enemyType: 'fast', amount: 3, spawnInterval: 500, wait: 4250 }],
+            [{ enemyType: 'fast', amount: 3, spawnInterval:500, wait: 0}, {enemyType: 'normal', amount: 5, spawnInterval: 500, wait: 1500}, {enemyType: 'slow', amount: 1, spawnInterval:500, wait: 1500}],
+            [{ enemyType: 'normal', amount: 10, spawnInterval: 750, wait: 0}, { enemyType: 'boss', amount: 1, spawnInterval: 0, wait: 8000}],
+            [{ enemyType: 'normal', amount: 3, spawnInterval: 500, wait:0}, { enemyType: 'abnormal', amount: 2, spawnInterval: 500, wait: 1500}, { enemyType: 'quick', amount: 3, spawnInterval: 1000, wait: 2500}],
+            [{ enemyType: 'fast', amount: 10, spawnInterval: 500, wait: 0 }, { enemyType: 'quick', amount: 5, spawnInterval: 1000, wait: 0 }, { enemyType: 'slow', amount: 10, spawnInterval: 1000, wait: 5000 }, { enemyType: 'tank', amount: 5, spawnInterval: 2000, wait: 5000 }],
+            [{ enemyType: 'abnormal', amount: 5, spawnInterval: 500, wait: 0 }, { enemyType: 'fast', amount: 5, spawnInterval: 100, wait: 0 }, { enemyType: 'boss', amount: 2, spawnInterval: 3000, wait: 5000 }],
+            [{ enemyType: 'quick', amount: 3, spawnInterval:500, wait: 0}, {enemyType: 'abnormal', amount: 5, spawnInterval: 500, wait: 1500}, {enemyType: 'tank', amount: 1, spawnInterval:500, wait: 1500}],
+            [{ enemyType: 'slow', amount: 25, spawnInterval: 250, wait: 0 }, { enemyType: 'tank', amount: 10, spawnInterval: 500, wait: 1250 }, { enemyType: 'boss', amount: 3, spawnInterval: 2500, wait: 10000 }, { enemyType: 'slowboss', amount: 1, spawnInterval: 0, wait: 20000 }]
         ];
 
         function spawnWave(waveIndex) {
@@ -650,7 +601,7 @@
             wave.forEach(section => {
                 setTimeout(() => {
                     spawnWaveSection(section);
-                }, section.timeout);
+                }, section.wait);
                 sectionsSpawned++;
             });
         }
@@ -665,13 +616,36 @@
                 }
 
                 const enemy = new Enemy(wave.enemyType, 'test', { healthBorder: true });
-                enemy.intervalId = setInterval(() => enemy.move(), 1);
                 enemiesSpawned++;
 
             }, wave.spawnInterval);
         }
 
-        var towerList = [];
+        setInterval(() => {
+            ctx.clearRect(0, 0, gameBoard.width, gameBoard.height);
+            drawGrid();
+            
+            if (selectedTower != null) {
+                ctx.beginPath();
+                ctx.arc(selectedTower.x * spacing + spacing / 2, selectedTower.y * spacing + spacing / 2, selectedTower.range * spacing, 0, 2 * Math.PI);
+                ctx.strokeStyle = 'black';
+                ctx.fillStyle = 'rgba(128, 128, 128, 0.5)';
+                ctx.fill();
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+            // Update and draw all enemies
+            enemies.forEach(enemy => {
+
+                enemy.move();
+            });
+            // Draw all towers
+            towers.forEach(tower => {
+                tower.draw();
+            });
+
+        }, 1000 / 60); // 60 FPS
+
         var waveMax = waves.length;
         var waveNumber = 0;
         var health = 100;
@@ -690,7 +664,14 @@
 
         autoStartButton.autoStart = false;
 
-
+        setInterval(() => {
+            if (selectedTower != null) {  
+                upgradeContainer.querySelector('p:nth-child(2)').innerHTML = `Range: ${Math.round(selectedTower.range * 10) / 10}`;
+                upgradeContainer.querySelector('p:nth-child(3)').innerHTML = `Damage: ${selectedTower.damage}`;
+                upgradeContainer.querySelector('p:nth-child(4)').innerHTML = `Fire Rate: ${selectedTower.fireRate}`;
+                upgradeContainer.querySelector('p:nth-child(5)').innerHTML = `Damage Count: ${selectedTower.damageCount}`;
+            }
+        }, 1);
 
         autoStartButton.onclick = () => {
             if (autoStartButton.autoStart) {
@@ -709,55 +690,6 @@
                 waveContainer.innerHTML = `Wave: ${waveNumber}/${waveMax}`;
             };
         }
-
-        setInterval(() => {
-            if (selectedTower != null) {
-                upgradeContainer.style.alignContent = 'center';
-                upgradeContainer.style.textAlign = 'center';
-                upgradeContainer.innerHTML = `
-                Selected Tower: ${selectedTower.name} <br> 
-                Damage: ${selectedTower.damage} <br> 
-                Range: ${selectedTower.range} <br> 
-                Fire Rate: ${selectedTower.fireRate} <br> 
-                Targeting: ${selectedTower.targetingType} <br> 
-                Damage Count: ${selectedTower.damageCount}`;
-                let upgradeRangeButton = document.createElement('button');
-                let upgradeDamageButton = document.createElement('button');
-                let upgradeFireRateButton = document.createElement('button');
-                upgradeRangeButton.innerHTML = `Upgrade Range <br> Cost: ${selectedTower.range * 10}`;
-                upgradeDamageButton.innerHTML = 'Upgrade Damage';
-                upgradeFireRateButton.innerHTML = 'Upgrade Fire Rate';
-                upgradeRangeButton.onclick = () => {
-                    if (money >= selectedTower.range * 10) {
-                        money -= selectedTower.range * 10;
-                        selectedTower.range++;
-                        moneyContainer.innerHTML = `Money: ${money}`;
-                    }
-                };
-                upgradeDamageButton.onclick = () => {
-                    if (money >= selectedTower.damage * 10) {
-                        money -= selectedTower.damage * 10;
-                        selectedTower.damage++;
-                        moneyContainer.innerHTML = `Money: ${money}`;
-                    }
-                };
-                upgradeFireRateButton.onclick = () => {
-                    if (money >= selectedTower.fireRate * 10) {
-                        money -= selectedTower.fireRate * 10;
-                        selectedTower.fireRate++;
-                        moneyContainer.innerHTML = `Money: ${money}`;
-                    }
-                };
-                upgradeContainer.appendChild(upgradeRangeButton);
-                upgradeContainer.appendChild(upgradeDamageButton);
-                upgradeContainer.appendChild(upgradeFireRateButton);
-
-            } else {
-                upgradeContainer.innerHTML = 'No Tower Selected';
-                upgradeContainer.style.alignContent = 'center';
-                upgradeContainer.style.textAlign = 'center';
-            }
-        }, 1);
     </script>
 </body>
 
