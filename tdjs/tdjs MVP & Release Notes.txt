@@ -1,5 +1,10 @@
 Main Idea: Get a working tower defense where the user has to program the targeting for the towers in JavaScript.
 
+
+Important:
+-Server handles all game mechanics except for the clients targeting programs
+-Client handles all design elements
+
 MVP:
 -Make a tower
 	-Make the tower exist
@@ -32,3 +37,8 @@ Release:
 -Add statuses for enemies and towers
 
 
+Needed Functions:
+-NodeJS
+-Socket.io
+-Oauth2
+-HTTP API
