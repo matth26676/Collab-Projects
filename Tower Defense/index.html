@@ -402,6 +402,8 @@
                     const rect = gameBoard.getBoundingClientRect();
                     const x = Math.round((event.clientX - rect.left + window.scrollX) / spacing);
                     const y = Math.round((event.clientY - rect.top + window.scrollY) / spacing);
+                    console.log(x, y, this.x, this.y);
+                    
                     
 
                     if (this.x-1 === x && this.y-1 === y) {
