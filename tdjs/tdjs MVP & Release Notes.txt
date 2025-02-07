@@ -1,0 +1,34 @@
+Main Idea: Get a working tower defense where the user has to program the targeting for the towers in JavaScript.
+
+MVP:
+-Make a tower
+	-Make the tower exist
+	-Make the tower shoot
+	-Add a temporary targeting system
+	-Remove the targeting system and make the user program it
+	-Create simple rules for program
+	-Create key terms for the program
+-Make a target
+	-Make a test enemy
+	-Make it possible for the tower to target it
+-Make a simple map
+	-Make it exist
+	-Make towers exist on the map
+-Make an enemy
+	-Make it spawn on the map
+	-Make it move along the map
+	-Remove it upon exiting the map
+
+Release:
+-Make towers stop/shutdown for a set # of rounds if the program for targeting breaks the rules
+-Add a UI
+-Make it possible for users to transfer their code between levels and use previous programs
+-Add more towers
+-Add more enemy types
+-Expand map
+-Add more levels
+-Add stats for towers
+-Add upgrades for towers
+-Add statuses for enemies and towers
+
+
