@@ -176,8 +176,8 @@
         grid[2][0].isStart = true;
         grid[18][31].isEnd = true;
 
-        const pathPoint = [{y:2,x:0},{y:2,x:8},{y:12,x:8},{y:12,x:16},{y:2,x:16},{y:2,x:24},{y:18,x:24},{y:18,x:31}];
-        
+        const pathPoint = [{ y: 2, x: 0 }, { y: 2, x: 8 }, { y: 12, x: 8 }, { y: 12, x: 16 }, { y: 2, x: 16 }, { y: 2, x: 24 }, { y: 18, x: 24 }, { y: 18, x: 31 }];
+
         for (let i = 0; i < pathPoint.length - 1; i++) {
             const start = pathPoint[i];
             const end = pathPoint[i + 1];
@@ -187,14 +187,14 @@
             const yDirection = yDiff > 0 ? 1 : -1;
 
             if (xDiff !== 0) {
-            for (let j = 0; j <= Math.abs(xDiff); j++) {
-                
-                grid[start.y][start.x + j * xDirection].hasPath = true;
-            }
+                for (let j = 0; j <= Math.abs(xDiff); j++) {
+
+                    grid[start.y][start.x + j * xDirection].hasPath = true;
+                }
             } else {
-            for (let j = 0; j <= Math.abs(yDiff); j++) {
-                grid[start.y + j * yDirection][start.x].hasPath = true;
-            }
+                for (let j = 0; j <= Math.abs(yDiff); j++) {
+                    grid[start.y + j * yDirection][start.x].hasPath = true;
+                }
             }
         }
 
@@ -215,8 +215,8 @@
                         ctx.fillStyle = 'lightgreen';
                     }
                     ctx.fillRect(j * spacing, i * spacing, spacing, spacing);
-                    ctx.strokeStyle = 'black';
-                    ctx.strokeRect(j * spacing, i * spacing, spacing, spacing);
+                    // ctx.strokeStyle = 'black';
+                    // ctx.strokeRect(j * spacing, i * spacing, spacing, spacing);
                 }
             }
         }
@@ -239,7 +239,7 @@
                     case 'normal':
                         this.health = 10;
                         this.maxHealth = 10;
-                        this.speed = 20;
+                        this.speed = 40;
                         this.color = 'white';
                         this.size = 45;
                         break;
@@ -253,55 +253,55 @@
                     case 'boss':
                         this.health = 100;
                         this.maxHealth = 100;
-                        this.speed = 5;
-                        this.color = 'red';
+                        this.speed = 10;
+                        this.color = 'white';
                         this.size = 55;
                         break;
                     case 'fast':
                         this.health = 5;
                         this.maxHealth = 5;
-                        this.speed = 30;
+                        this.speed = 60;
                         this.color = 'dodgerblue';
                         this.size = 45;
                         break;
                     case 'slow':
                         this.health = 20;
                         this.maxHealth = 20;
-                        this.speed = 15;
+                        this.speed = 30;
                         this.color = 'green';
                         this.size = 45;
                         break;
                     case 'tank':
                         this.health = 40;
                         this.maxHealth = 40;
-                        this.speed = 10;
+                        this.speed = 20;
                         this.color = 'darkgreen';
                         this.size = 45;
                         break;
                     case 'quick':
                         this.health = 5;
                         this.maxHealth = 5;
-                        this.speed = 40;
+                        this.speed = 80;
                         this.color = 'blue';
                         this.size = 45;
                         break;
                     case 'abnormal':
                         this.health = 20;
                         this.maxHealth = 20;
-                        this.speed = 25;
+                        this.speed = 50;
                         this.color = 'lightgray';
                         this.size = 45;
                         break;
-                    case 'heavyboss':
+                    case 'slowboss':
                         this.health = 1000;
                         this.maxHealth = 1000;
-                        this.speed = 3;
-                        this.color = 'darkred';
+                        this.speed = 6;
+                        this.color = 'maroon';
                         this.size = 65;
                         break;
                 }
                 if (!this.value) {
-                    this.value = this.health;
+                    this.value = Math.round(this.health / 2);
                 }
                 this.nextX = this.x;
                 this.nextY = this.y;
@@ -388,8 +388,8 @@
                 this.y = y;
                 switch (presetTower) {
                     case 'basic':
-                        this.range = 3;
-                        this.damage = 1;
+                        this.range = 4;
+                        this.damage = 2;
                         this.fireRate = 3;
                         this.name = 'Basic';
                         break;
@@ -398,15 +398,15 @@
                 this.targetingType = 'first';
                 this.intervalId = setInterval(() => this.shoot(), 1000 / this.fireRate);
                 gameBoard.addEventListener('click', (event) => {
-                    
+
                     const rect = gameBoard.getBoundingClientRect();
                     const x = Math.round((event.clientX - rect.left + window.scrollX) / spacing);
                     const y = Math.round((event.clientY - rect.top + window.scrollY) / spacing);
                     console.log(x, y, this.x, this.y);
-                    
-                    
 
-                    if (this.x-1 === x && this.y-1 === y) {
+
+
+                    if (this.x - 1 === x && this.y - 1 === y) {
                         if (selectedTower === this) {
                             selectedTower = null;
                             upgradeContainer.innerHTML = '';
@@ -422,15 +422,15 @@
                             let upgradeRangeButton = document.createElement('button');
                             let upgradeDamageButton = document.createElement('button');
                             let upgradeFireRateButton = document.createElement('button');
-                            upgradeRangeButton.innerHTML = `Increase Range <br> Cost: ${Math.round(this.range)}`;
+                            upgradeRangeButton.innerHTML = `Increase Range <br> Cost: ${this.range * 10}`;
                             upgradeDamageButton.innerHTML = `Increase Damage <br> Cost: ${this.damage * 10}`;
                             upgradeFireRateButton.innerHTML = `Increase Fire Rate <br> Cost: ${this.fireRate * 10}`;
                             upgradeRangeButton.onclick = () => {
-                                if (money >= Math.round(this.range)) {
-                                    money -= Math.round(this.range);
+                                if (money >= Math.round(this.range * 10)) {
+                                    money -= Math.round(this.range * 10);
                                     moneyContainer.innerHTML = `Money: ${money}`;
-                                    this.range++;
-                                    upgradeRangeButton.innerHTML = `Increase Range <br> Cost: ${Math.round(this.range)}`;
+                                    this.range += 0.25;
+                                    upgradeRangeButton.innerHTML = `Increase Range <br> Cost: ${Math.round(this.range * 10)}`;
                                 }
                             };
                             upgradeDamageButton.onclick = () => {
@@ -492,9 +492,9 @@
 
 
                     console.log(this.targetingType);
-                    
+
                     switch (this.targetingType) {
-                        
+
                         case 'first':
                             if (distance <= this.range && distanceFromStart > enemyFarthestFromStart) {
                                 enemyFarthestFromStart = distanceFromStart;
@@ -539,7 +539,7 @@
 
             shoot() {
                 const target = this.findTarget();
-                
+
                 if (!target) return;
 
                 const enemyInstance = target;
@@ -582,16 +582,48 @@
         // use the format of { enemyType: '<enemy name>', amount: #, spawnInterval: #, wait: # } inside of a list inside the waves list to make a section of a wave
 
         waves = [
-            [{ enemyType: 'normal', amount: 3, spawnInterval: 1000, wait: 0 }],
-            [{ enemyType: 'normal', amount: 5, spawnInterval: 750, wait: 0 }],
-            [{ enemyType: 'normal', amount: 5, spawnInterval: 750, wait: 0 }, { enemyType: 'fast', amount: 3, spawnInterval: 500, wait: 4250 }],
-            [{ enemyType: 'fast', amount: 3, spawnInterval:500, wait: 0}, {enemyType: 'normal', amount: 5, spawnInterval: 500, wait: 1500}, {enemyType: 'slow', amount: 1, spawnInterval:500, wait: 1500}],
-            [{ enemyType: 'normal', amount: 10, spawnInterval: 750, wait: 0}, { enemyType: 'boss', amount: 1, spawnInterval: 0, wait: 8000}],
-            [{ enemyType: 'normal', amount: 3, spawnInterval: 500, wait:0}, { enemyType: 'abnormal', amount: 2, spawnInterval: 500, wait: 1500}, { enemyType: 'quick', amount: 3, spawnInterval: 1000, wait: 2500}],
-            [{ enemyType: 'fast', amount: 10, spawnInterval: 500, wait: 0 }, { enemyType: 'quick', amount: 5, spawnInterval: 1000, wait: 0 }, { enemyType: 'slow', amount: 10, spawnInterval: 1000, wait: 5000 }, { enemyType: 'tank', amount: 5, spawnInterval: 2000, wait: 5000 }],
-            [{ enemyType: 'abnormal', amount: 5, spawnInterval: 500, wait: 0 }, { enemyType: 'fast', amount: 5, spawnInterval: 100, wait: 0 }, { enemyType: 'boss', amount: 2, spawnInterval: 3000, wait: 5000 }],
-            [{ enemyType: 'quick', amount: 3, spawnInterval:500, wait: 0}, {enemyType: 'abnormal', amount: 5, spawnInterval: 500, wait: 1500}, {enemyType: 'tank', amount: 1, spawnInterval:500, wait: 1500}],
-            [{ enemyType: 'slow', amount: 25, spawnInterval: 250, wait: 0 }, { enemyType: 'tank', amount: 10, spawnInterval: 500, wait: 1250 }, { enemyType: 'boss', amount: 3, spawnInterval: 2500, wait: 10000 }, { enemyType: 'slowboss', amount: 1, spawnInterval: 0, wait: 20000 }]
+            [
+                { enemyType: 'normal', amount: 5, spawnInterval: 1000, wait: 0 }
+            ],
+            [
+                { enemyType: 'normal', amount: 10, spawnInterval: 750, wait: 0 }
+            ],
+            [
+                { enemyType: 'normal', amount: 5, spawnInterval: 1000, wait: 0 },
+                { enemyType: 'fast', amount: 3, spawnInterval: 500, wait: 5000 }
+            ],
+            [
+                { enemyType: 'normal', amount: 10, spawnInterval: 800, wait: 0 },
+                { enemyType: 'fast', amount: 5, spawnInterval: 400, wait: 5000 }
+            ],
+            [
+                { enemyType: 'normal', amount: 15, spawnInterval: 700, wait: 0 },
+                { enemyType: 'normal', amount: 10, spawnInterval: 500, wait: 5000 },
+                { enemyType: 'normal', amount: 5, spawnInterval: 300, wait: 10000 }
+            ],
+            [
+                { enemyType: 'normal', amount: 10, spawnInterval: 800, wait: 0 },
+                { enemyType: 'fast', amount: 5, spawnInterval: 400, wait: 5000 },
+                { enemyType: 'normal', amount: 10, spawnInterval: 800, wait: 10000 }
+            ],
+            [
+                { enemyType: 'normal', amount: 10, spawnInterval: 800, wait: 0 },
+                { enemyType: 'slow', amount: 5, spawnInterval: 1200, wait: 5000 }
+            ],
+            [
+                { enemyType: 'fast', amount: 10, spawnInterval: 500, wait: 0 },
+                { enemyType: 'slow', amount: 5, spawnInterval: 1000, wait: 5000 }
+            ],
+            [
+                { enemyType: 'normal', amount: 10, spawnInterval: 800, wait: 0 },
+                { enemyType: 'fast', amount: 5, spawnInterval: 400, wait: 5000 },
+                { enemyType: 'slow', amount: 3, spawnInterval: 1200, wait: 10000 }
+            ],
+            [
+                { enemyType: 'normal', amount: 10, spawnInterval: 800, wait: 0 },
+                { enemyType: 'boss', amount: 1, spawnInterval: 0, wait: 8800 }
+            ]
+            
         ];
 
         function spawnWave(waveIndex) {
@@ -626,7 +658,7 @@
         setInterval(() => {
             ctx.clearRect(0, 0, gameBoard.width, gameBoard.height);
             drawGrid();
-            
+
             if (selectedTower != null) {
                 ctx.beginPath();
                 ctx.arc(selectedTower.x * spacing + spacing / 2, selectedTower.y * spacing + spacing / 2, selectedTower.range * spacing, 0, 2 * Math.PI);
@@ -667,8 +699,8 @@
         autoStartButton.autoStart = false;
 
         setInterval(() => {
-            if (selectedTower != null) {  
-                upgradeContainer.querySelector('p:nth-child(2)').innerHTML = `Range: ${Math.round(selectedTower.range * 10) / 10}`;
+            if (selectedTower != null) {
+                upgradeContainer.querySelector('p:nth-child(2)').innerHTML = `Range: ${selectedTower.range}`;
                 upgradeContainer.querySelector('p:nth-child(3)').innerHTML = `Damage: ${selectedTower.damage}`;
                 upgradeContainer.querySelector('p:nth-child(4)').innerHTML = `Fire Rate: ${selectedTower.fireRate}`;
                 upgradeContainer.querySelector('p:nth-child(5)').innerHTML = `Damage Count: ${selectedTower.damageCount}`;

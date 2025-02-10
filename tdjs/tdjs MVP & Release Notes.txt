@@ -26,6 +26,9 @@ MVP:
 
 Release:
 -Make towers stop/shutdown for a set # of rounds if the program for targeting breaks the rules
+-Add Base Health and add a game over
+-Add a money system
+-add a way to place towers
 -Add a UI
 -Make it possible for users to transfer their code between levels and use previous programs
 -Add more towers
