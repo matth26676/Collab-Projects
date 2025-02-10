@@ -335,6 +335,7 @@
             }
 
             move() {
+                this.targetX = pathPoint[-1]
                 const currentPoint = pathPoint.find(point => point.x === this.x && point.y === this.y);
                 if (currentPoint) {
                     const currentIndex = pathPoint.indexOf(currentPoint);
@@ -400,13 +401,16 @@
                 gameBoard.addEventListener('click', (event) => {
 
                     const rect = gameBoard.getBoundingClientRect();
-                    const x = Math.round((event.clientX - rect.left + window.scrollX) / spacing);
-                    const y = Math.round((event.clientY - rect.top + window.scrollY) / spacing);
-                    console.log(x, y, this.x, this.y);
+                    let xSpacing = rect.width / cols;
+                    let ySpacing = rect.height / rows;
+                    const x = Math.floor((event.clientX - rect.left + window.scrollX) / xSpacing);
+                    const y = Math.floor((event.clientY - rect.top + window.scrollY) / ySpacing);
+                    console.log(x, y);
+                    
 
 
 
-                    if (this.x - 1 === x && this.y - 1 === y) {
+                    if (this.x === x && this.y === y) {
                         if (selectedTower === this) {
                             selectedTower = null;
                             upgradeContainer.innerHTML = '';
