@@ -39,6 +39,9 @@ Release:
 -Add upgrades for towers
 -Add statuses for enemies and towers
 
+Extras:
+-Turn into a Rogue Like
+
 
 Needed Functions:
 -NodeJS

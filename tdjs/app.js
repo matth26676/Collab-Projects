@@ -41,6 +41,8 @@ app.get('/logout', routes.getlogout);
 
 app.get('/chat', routes.getchat);
 
+app.get('/game', routes.getgame);
+
 io.on('connection', (socket) => sockets.connection(socket, io));
 
 app.use(express.static(path.join(__dirname, 'public')));

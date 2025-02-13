@@ -83,6 +83,14 @@ function getchat(req, res) {
     }
 }
 
+function getgame(req, res) {
+    if (isAuthenticated) {
+        res.render('maps/test')
+    } else {
+        res.redirect('/login');
+    }
+}
+
 function isAuthenticated(req, res, next) {
     if (req.session.user) {
         return true;
@@ -98,5 +106,6 @@ module.exports = {
     getlogin,
     postlogin,
     getlogout,
-    getchat
+    getchat,
+    getgame
 }

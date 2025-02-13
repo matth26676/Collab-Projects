@@ -24,6 +24,10 @@
             chatLink.href = '/chat';
             chatLink.textContent = 'Chat';
             document.body.appendChild(chatLink);
+            const gameLink = document.createElement('a');
+            gameLink.href = '/game';
+            gameLink.textContent = 'Play Game';
+            document.body.appendChild(gameLink);
         } else {
             const Guest = document.createElement('h1');
             Guest.textContent = 'Welcome! Please login to play';
