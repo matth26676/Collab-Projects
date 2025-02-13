@@ -363,6 +363,8 @@ function spawnWaveSection(section) {
     }, section.spawnInterval);
 }
 
+
+
 function connection(socket, io) {
     console.log('A user connected');
 
@@ -383,6 +385,14 @@ function connection(socket, io) {
         })
         io.emit('gameData', [{ grid, rows, cols }, enemies, towers]);
     }, 1000 / 60); // 60 FPS
+
+    socket.on('towerPlace', placementCoords => {
+        let x = Math.floor(placementCoords.x)
+        let y = Math.floor(placementCoords.y)
+        console.log(x, y);
+        
+        
+    })
 
     socket.on('startWave', waveIndex => {
         spawnWave(waveIndex);
