@@ -208,7 +208,7 @@ class Tower {
                 const distance = Math.sqrt(Math.pow(enemy.x - this.x, 2) + Math.pow(enemy.y - this.y, 2));
                 const distanceFromStart = enemy.distanceFromStart;
                 const maxHealth = enemy.maxHealth;
-                console.log(distance, this.range, distanceFromStart, maxHealth);
+
                 
 
                 switch (this.targetingType) {
