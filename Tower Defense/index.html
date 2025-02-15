@@ -18,13 +18,24 @@
             overflow-y: hidden;
         }
 
+        #subPage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: calc(100vw/2);
+            background-color: navy;
+            overflow-x: hidden;
+            overflow-y: hidden;
+        }
+
         #gameBoard {
             position: absolute;
             background-color: black;
-            top: 10vh;
-            left: 15vw;
-            width: 70vw;
-            height: 90vh;
+            top: 10%;
+            left: 15%;
+            width: 70%;
+            height: 90%;
             z-index: 1;
         }
 
@@ -32,8 +43,8 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 10vh;
+            width: 100%;
+            height: 10%;
             background-color: lightgray;
             z-index: 5;
         }
@@ -68,8 +79,8 @@
             position: absolute;
             bottom: 0;
             left: 0;
-            width: 15vw;
-            height: 90vh;
+            width: 15%;
+            height: 90%;
             background-color: lightgray;
             z-index: 5;
         }
@@ -87,8 +98,8 @@
             position: absolute;
             bottom: 0;
             right: 0;
-            width: 15vw;
-            height: 90vh;
+            width: 15%;
+            height: 90%;
             background-color: lightgray;
             z-index: 5;
         }
@@ -96,8 +107,8 @@
         #towerPlacementBar {
             position: relative;
             top: 0;
-            width: 100vw;
-            height: 90vh;
+            width: 100%;
+            height: 90%;
             background-color: rgb(146, 146, 146);
             z-index: 5;
         }
@@ -107,7 +118,7 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 10vh;
+            height: 10%;
             background-color: lightgray;
             z-index: 5;
         }
@@ -140,20 +151,22 @@
 
 <body>
     <div id="mainPage">
-        <div id="informationBar">
-            <div id="healthBar" class="informationBarSection">Health: null</div>
-            <div id="moneyBar" class="informationBarSection">Money: null</div>
-            <div id="waveBar" class="informationBarSection">Wave: null</div>
-        </div>
-        <div id="rightBar">
-            <div id="towerPlacementBar"></div>
-            <div id="menuBar">
-                <button id="start">Send Wave</button>
-                <button id="autoStart">Autostart</button>
+        <div id="subPage">
+            <div id="informationBar">
+                <div id="healthBar" class="informationBarSection">Health: null</div>
+                <div id="moneyBar" class="informationBarSection">Money: null</div>
+                <div id="waveBar" class="informationBarSection">Wave: null</div>
             </div>
-        </div>
-        <div id="leftBar">
-            <div id="upgradeContainer"></div>
+            <div id="rightBar">
+                <div id="towerPlacementBar"></div>
+                <div id="menuBar">
+                    <button id="start">Send Wave</button>
+                    <button id="autoStart">Autostart</button>
+                </div>
+            </div>
+            <div id="leftBar">
+                <div id="upgradeContainer"></div>
+            </div>
         </div>
     </div>
 
@@ -202,7 +215,7 @@
         gameBoard.id = 'gameBoard';
         gameBoard.width = cols * spacing;
         gameBoard.height = rows * spacing;
-        document.getElementById('mainPage').appendChild(gameBoard);
+        document.getElementById('subPage').appendChild(gameBoard);
 
         const ctx = gameBoard.getContext('2d');
 
@@ -342,6 +355,10 @@
                     if (currentIndex < pathPoint.length - 1) {
                         this.nextX = pathPoint[currentIndex + 1].x;
                         this.nextY = pathPoint[currentIndex + 1].y;
+                    } else {
+                        health -= this.health
+                        healthContainer.innerHTML = `Health: ${health}`;
+                        enemies.splice(enemies.indexOf(this), 1)
                     }
                 }
 
@@ -405,8 +422,7 @@
                     let ySpacing = rect.height / rows;
                     const x = Math.floor((event.clientX - rect.left + window.scrollX) / xSpacing);
                     const y = Math.floor((event.clientY - rect.top + window.scrollY) / ySpacing);
-                    console.log(x, y);
-                    
+
 
 
 
@@ -493,9 +509,6 @@
                     const distance = Math.sqrt(Math.pow(enemy.x - this.x, 2) + Math.pow(enemy.y - this.y, 2));
                     const distanceFromStart = enemy.distanceFromStart;
                     const maxHealth = enemy.maxHealth;
-
-
-                    console.log(this.targetingType);
 
                     switch (this.targetingType) {
 
@@ -627,20 +640,26 @@
                 { enemyType: 'normal', amount: 10, spawnInterval: 800, wait: 0 },
                 { enemyType: 'boss', amount: 1, spawnInterval: 0, wait: 8800 }
             ]
-            
+
         ];
 
         function spawnWave(waveIndex) {
             if (waveIndex >= waves.length) return;
 
             let sectionsSpawned = 0;
+            activeWave = true
             const wave = waves[waveIndex];
 
             wave.forEach(section => {
                 setTimeout(() => {
                     spawnWaveSection(section);
+                    sectionsSpawned++;
+                    if (wave.length == sectionsSpawned) {
+                        setTimeout(() => {
+                            activeWave = false
+                        }, (section.amount * section.spawnInterval))
+                    }
                 }, section.wait);
-                sectionsSpawned++;
             });
         }
 
@@ -688,6 +707,9 @@
         var waveNumber = 0;
         var health = 100;
         var money = 0;
+        var towerList = ['basic']
+        var selectedPlacement = null;
+        var activeWave = false
         var healthContainer = document.getElementById('healthBar');
         var moneyContainer = document.getElementById('moneyBar');
         var waveContainer = document.getElementById('waveBar');
@@ -711,6 +733,41 @@
             }
         }, 1);
 
+        towerList.forEach(element => {
+            const newTowerButton = document.createElement('button')
+            newTowerButton.innerHTML = element;
+            newTowerButton.onclick = () => {
+                if (selectedPlacement == element) {
+                    selectedPlacement = null;
+                } else if (money >= 10) {
+                    selectedPlacement = element;
+                    console.log(selectedPlacement);
+                    
+                    let placeTower = gameBoard.addEventListener('click', (event) => {
+                        const rect = gameBoard.getBoundingClientRect();
+                        let xSpacing = rect.width / cols;
+                        let ySpacing = rect.height / rows;
+                        const x = Math.floor((event.clientX - rect.left + window.scrollX) / xSpacing);
+                        const y = Math.floor((event.clientY - rect.top + window.scrollY) / ySpacing);
+                        if (grid[y][x].hasPath) {
+                            selectedPlacement = null;
+                            alert('Cannot place tower on path');
+                        } else if (towers.some(tower => tower.x === x && tower.y === y)) {
+                            selectedPlacement = null;
+                            alert('Cannot place tower on another tower');
+                        } else {
+                            let tower = new Tower(selectedPlacement, {}, y, x);
+                            towers.push(tower);
+                            selectedPlacement = null;
+                            money -= 10;
+                            moneyContainer.innerHTML = `Money: ${money}`;
+                        }
+                    });
+                }
+            }
+            towerMenu.appendChild(newTowerButton);
+        });
+
         autoStartButton.onclick = () => {
             if (autoStartButton.autoStart) {
                 autoStartButton.autoStart = false;
@@ -723,9 +780,11 @@
         if (autoStartButton.autoStart) {
         } else {
             startButton.onclick = () => {
-                spawnWave(waveNumber);
-                waveNumber++;
-                waveContainer.innerHTML = `Wave: ${waveNumber}/${waveMax}`;
+                if (enemies.length == 0 && !activeWave) {
+                    spawnWave(waveNumber);
+                    waveNumber++;
+                    waveContainer.innerHTML = `Wave: ${waveNumber}/${waveMax}`;
+                }
             };
         }
     </script>
